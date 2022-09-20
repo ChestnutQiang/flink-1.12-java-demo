@@ -19,29 +19,36 @@
 package com.dtstack.flinkx.catalog;
 
 import com.dtstack.flinkx.dialect.JdbcDialectTypeMapper;
+
 import com.dtstack.flinkx.dialect.MySqlTypeMapper;
+import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.annotation.Internal;
-import org.apache.flink.table.catalog.CatalogBaseTable;
-import org.apache.flink.table.catalog.CatalogDatabase;
-import org.apache.flink.table.catalog.ObjectPath;
+import org.apache.flink.table.api.TableSchema;
+import org.apache.flink.table.api.constraints.UniqueConstraint;
+import org.apache.flink.table.catalog.*;
 import org.apache.flink.table.catalog.exceptions.CatalogException;
 import org.apache.flink.table.catalog.exceptions.DatabaseNotExistException;
 import org.apache.flink.table.catalog.exceptions.TableNotExistException;
+import org.apache.flink.table.descriptors.Schema;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.util.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.sql.*;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.IntStream;
+
+import static com.dtstack.flinkx.table.JdbcConnectorOptions.PASSWORD;
+import static com.dtstack.flinkx.table.JdbcConnectorOptions.TABLE_NAME;
+import static com.dtstack.flinkx.table.JdbcConnectorOptions.URL;
+import static com.dtstack.flinkx.table.JdbcConnectorOptions.USERNAME;
+
+import static com.dtstack.flinkx.table.JdbcDynamicTableFactory.IDENTIFIER;
+import static org.apache.flink.table.factories.FactoryUtil.CONNECTOR;
 
 /** Catalog for MySQL. */
 @Internal
@@ -86,10 +93,18 @@ public class MySqlCatalog extends AbstractJdbcCatalog {
                 1,
                 dbName -> !builtinDatabases.contains(dbName));
     }
-
     @Override
-    public CatalogDatabase getDatabase(String databaseName) throws DatabaseNotExistException, CatalogException {
-        return null;
+    public CatalogDatabase getDatabase(String databaseName)
+            throws DatabaseNotExistException, CatalogException {
+
+        Preconditions.checkState(
+                !org.apache.flink.util.StringUtils.isNullOrWhitespaceOnly(databaseName),
+                "Database name must not be blank.");
+        if (listDatabases().contains(databaseName)) {
+            return new CatalogDatabaseImpl(Collections.emptyMap(), null);
+        } else {
+            throw new DatabaseNotExistException(getName(), databaseName);
+        }
     }
 
     // ------ tables ------
@@ -112,10 +127,57 @@ public class MySqlCatalog extends AbstractJdbcCatalog {
     }
 
     @Override
-    public CatalogBaseTable getTable(ObjectPath tablePath) throws TableNotExistException, CatalogException {
-        return null;
-    }
+    public CatalogBaseTable getTable(ObjectPath tablePath)
+            throws TableNotExistException, CatalogException {
 
+        if (!tableExists(tablePath)) {
+            throw new TableNotExistException(getName(), tablePath);
+        }
+
+        String databaseName = tablePath.getDatabaseName();
+        String dbUrl = baseUrl + databaseName;
+
+        try (Connection conn = DriverManager.getConnection(dbUrl, username, pwd)) {
+            DatabaseMetaData metaData = conn.getMetaData();
+            Optional<UniqueConstraint> primaryKey =
+                    getPrimaryKey(metaData, getSchemaName(tablePath), getTableName(tablePath));
+
+            PreparedStatement ps =
+                    conn.prepareStatement(
+                            String.format("SELECT * FROM %s;", getSchemaTableName(tablePath)));
+
+            ResultSetMetaData resultSetMetaData = ps.getMetaData();
+
+            String[] columnNames = new String[resultSetMetaData.getColumnCount()];
+            DataType[] types = new DataType[resultSetMetaData.getColumnCount()];
+
+            for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++) {
+                columnNames[i - 1] = resultSetMetaData.getColumnName(i);
+                types[i - 1] = fromJDBCType(tablePath, resultSetMetaData, i);
+                if (resultSetMetaData.isNullable(i) == ResultSetMetaData.columnNoNulls) {
+                    types[i - 1] = types[i - 1].notNull();
+                }
+            }
+
+            TableSchema.Builder tableBuilder = new TableSchema.Builder().fields(columnNames, types);
+            primaryKey.ifPresent(
+                    pk ->
+                            tableBuilder.primaryKey(
+                                    pk.getName(), pk.getColumns().toArray(new String[0])));
+            TableSchema tableSchema = tableBuilder.build();
+
+            Map<String, String> props = new HashMap<>();
+            props.put(CONNECTOR.key(), IDENTIFIER);
+            props.put(URL.key(), dbUrl);
+            props.put(USERNAME.key(), username);
+            props.put(PASSWORD.key(), pwd);
+            props.put(TABLE_NAME.key(), getSchemaTableName(tablePath));
+            return new CatalogTableImpl(tableSchema, props, "");
+        } catch (Exception e) {
+            throw new CatalogException(
+                    String.format("Failed getting table %s", tablePath.getFullName()), e);
+        }
+    }
     @Override
     public boolean tableExists(ObjectPath tablePath) throws CatalogException {
         return !extractColumnValuesBySQL(

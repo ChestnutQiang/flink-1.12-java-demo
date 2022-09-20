@@ -20,6 +20,7 @@ package com.dtstack.flinkx.catalog;
 
 import com.dtstack.flinkx.dialect.JdbcDialect;
 import com.dtstack.flinkx.dialect.JdbcDialects;
+import com.dtstack.flinkx.dialect.MySQLDialect;
 import com.dtstack.flinkx.dialect.PostgresDialect;
 
 import static org.apache.flink.util.Preconditions.checkArgument;
@@ -47,6 +48,8 @@ public class JdbcCatalogUtils {
 
         if (dialect instanceof PostgresDialect) {
             return new PostgresCatalog(catalogName, defaultDatabase, username, pwd, baseUrl);
+        } else if (dialect instanceof MySQLDialect) {
+            return new MySqlCatalog(catalogName, defaultDatabase, username, pwd, baseUrl);
         } else {
             throw new UnsupportedOperationException(
                     String.format("Catalog for '%s' is not supported yet.", dialect));
