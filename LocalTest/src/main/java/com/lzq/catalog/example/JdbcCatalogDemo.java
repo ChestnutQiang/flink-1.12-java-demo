@@ -1008,7 +1008,7 @@
  *    4.如果再发布的产品中包含一个Notice文件，则在Notice文件中需要带有 Apache Licence。
  *      你可以在Notice中增加自己的许可，但不可以表现为对Apache Licence构成更改。
  */
-package com.lzq.catalog;
+package com.lzq.catalog.example;
 
 import org.apache.flink.configuration.PipelineOptions;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -1020,7 +1020,7 @@ import org.junit.Test;
  *
  * 测试flink 链接jdbc
  * Company: www.dtstack.com
- * @author xuchao
+ * @author wujuan
  * @date 2022-01-06
  */
 public class JdbcCatalogDemo {
@@ -1043,7 +1043,7 @@ public class JdbcCatalogDemo {
         String hiveCatalog = "CREATE CATALOG hiveCatalog WITH (\n" +
                 "    'type' = 'hive',\n" +
                 "    'default-database' = 'default',\n" +
-                "    'hive-conf-dir' = '/Users/xuchao/conf/hadoopconf/dev_hadoop'\n" +
+                "    'hive-conf-dir' = '/Users/wujuan/conf/hadoopconf/dev_hadoop'\n" +
                 ")";
 
         String useCatalog = "use CATALOG hiveCatalog";
@@ -1140,7 +1140,7 @@ public class JdbcCatalogDemo {
         String hiveCatalog = "CREATE CATALOG hiveCatalog WITH (\n" +
                 "    'type' = 'hive',\n" +
                 "    'default-database' = 'default',\n" +
-                "    'hive-conf-dir' = '/Users/xuchao/conf/hadoopconf/dev_hadoop'\n" +
+                "    'hive-conf-dir' = '/Users/wujuan/conf/hadoopconf/dev_hadoop'\n" +
                 ")";
 
         String useCatalog = "use CATALOG hiveCatalog";

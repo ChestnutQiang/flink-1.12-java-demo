@@ -1008,7 +1008,7 @@
  *    4.如果再发布的产品中包含一个Notice文件，则在Notice文件中需要带有 Apache Licence。
  *      你可以在Notice中增加自己的许可，但不可以表现为对Apache Licence构成更改。
  */
-package com.lzq.catalog;
+package com.lzq.catalog.example;
 
 import org.apache.flink.configuration.PipelineOptions;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
@@ -1022,7 +1022,7 @@ import org.junit.Test;
 /**
  * 验证flink iceberg 相关的功能
  * Company: www.dtstack.com
- * @author xuchao
+ * @author lizhiqiang
  * @date 2022-01-18
  */
 public class IcebergCatalogDemo {
@@ -1037,7 +1037,7 @@ public class IcebergCatalogDemo {
                 "    'clients'='2',\n" +
                 "    'iceberg.format.version'='2',\n" +
                 "    'property-version'='1',\n" +
-                "    'hive-conf-dir' = '/Users/xuchao/conf/hadoopconf/dev_hadoop',\n"+
+                "    'hive-conf-dir' = '/Users/wujuan/conf/hadoopconf/dev_hadoop',\n"+
                 "    'warehouse'='hdfs://ns1//user/hive/warehouse'\n" +
                 ")";
 
@@ -1109,7 +1109,7 @@ public class IcebergCatalogDemo {
                 "    'uri'='thrift://kudu3:9083',\n" +
                 "    'clients'='2',\n" +
                 "    'property-version'='1',\n" +
-                "    'hive-conf-dir' = '/Users/xuchao/conf/hadoopconf/dev_hadoop',\n"+
+                "    'hive-conf-dir' = '/Users/wujuan/conf/hadoopconf/dev_hadoop',\n"+
                 "    'warehouse'='hdfs://ns1//user/hive/warehouse'\n" +
                 ")";
 
@@ -1222,8 +1222,6 @@ public class IcebergCatalogDemo {
         tableResult.print();
 
         System.out.println("exe stmt");
-
-
     }
 
     @Test

@@ -1,4 +1,4 @@
-package com.lzq.catalog;
+package com.lzq.catalog.other;
 
 import cn.hutool.core.util.ReflectUtil;
 import org.apache.flink.configuration.PipelineOptions;
@@ -8,9 +8,7 @@ import org.apache.flink.table.api.StatementSet;
 import org.apache.flink.table.api.TableResult;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 import org.apache.flink.table.catalog.Catalog;
-import org.apache.flink.table.catalog.hive.HiveCatalog;
 import org.apache.flink.table.factories.CatalogFactory;
-import org.apache.flink.table.factories.FactoryUtil;
 import org.apache.flink.table.factories.TableFactoryService;
 import org.junit.Before;
 import org.junit.Rule;
@@ -135,7 +133,7 @@ public class HiveCatalogDemo {
         //        "CREATE CATALOG flink_hive_catalog WITH (\n"
         //                + "    'type' = 'hive',\n"
         //                + "    'default-database' = 'wujuan',\n"
-        //                + "    'hive-conf-dir' = '/Users/lzq/Desktop/Projects/Flink/flink-1.12-java-demo/src/main/resources/hiveconf/conf'\n"
+        //                + "    'hive-conf-dir' = '/Users/lzq/Desktop/Projects/Flink/flink-1.12-catalog-demo/LocalTest/src/main/resources/conf'\n"
         //                + ")";
         //tableEnv.executeSql(hiveCatalog);
         //
@@ -145,7 +143,7 @@ public class HiveCatalogDemo {
         String name = "flink_hive_catalog";
         String database = "wujuan";
         String confDir =
-                "/Users/lzq/Desktop/Projects/Flink/flink-1.12-java-demo/src/main/resources/hiveconf/conf";
+                "/Users/lzq/Desktop/Projects/Flink/flink-1.12-catalog-demo/LocalTest/src/main/resources/conf";
         // HiveConf hiveConf = new HiveConf(conf, HiveConf.class);
 
         Catalog catalog = new HiveCatalog(name, database, confDir);
@@ -187,7 +185,7 @@ public class HiveCatalogDemo {
         String hiveCatalog = "CREATE CATALOG flink_hive_catalog WITH (\n" +
                 "    'type' = 'hive',\n" +
                 "    'default-database' = 'wujuan',\n" +
-                "    'hive-conf-dir' = '/Users/lzq/Desktop/Projects/Flink/flink-1.12-java-demo/src/main/resources/hiveconf/conf'\n" +
+                "    'hive-conf-dir' = '/Users/lzq/Desktop/Projects/Flink/flink-1.12-catalog-demo/LocalTest/src/main/resources/conf'\n" +
                 ")";
         tableEnv.executeSql(hiveCatalog);
 
@@ -226,7 +224,7 @@ public class HiveCatalogDemo {
         String hiveCatalog = "CREATE CATALOG flink_hive_catalog WITH (\n" +
                 "    'type' = 'hive',\n" +
                 "    'default-database' = 'wujuan',\n" +
-                "    'hive-conf-dir' = '/Users/lzq/Desktop/Projects/Flink/flink-1.12-java-demo/src/main/resources/hiveconf/conf'\n" +
+                "    'hive-conf-dir' = '/Users/lzq/Desktop/Projects/Flink/flink-1.12-catalog-demo/LocalTest/src/main/resources/conf'\n" +
                 ")";
         tableEnv.executeSql(hiveCatalog);
 
@@ -292,7 +290,7 @@ public class HiveCatalogDemo {
     public void StreamSQLDemo4(){
 /*        String name            = "flink_hive_catalog";
         String defaultDatabase = "wujuan";
-        String hiveConfDir     = "/Users/lzq/Desktop/Projects/Flink/flink-1.12-java-demo/src/main/resources/hiveconf/conf";
+        String hiveConfDir     = "/Users/lzq/Desktop/Projects/Flink/flink-1.12-catalog-demo/LocalTest/src/main/resources/conf";
 
         HiveCatalog flinkHiveCatalog = new HiveCatalog(name, defaultDatabase, hiveConfDir);
         tableEnv.registerCatalog("flink_hive_catalog", flinkHiveCatalog);
