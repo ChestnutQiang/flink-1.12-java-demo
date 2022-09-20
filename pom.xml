@@ -11,6 +11,7 @@
     <modules>
         <module>flinkx-catalog</module>
         <module>LocalTest</module>
+        <module>DTCatalog-X</module>
     </modules>
 
 
