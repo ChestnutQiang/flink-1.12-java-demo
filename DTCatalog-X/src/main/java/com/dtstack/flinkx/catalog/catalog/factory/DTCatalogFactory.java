@@ -23,6 +23,8 @@ import com.dtstack.flinkx.catalog.table.descriptors.JdbcCatalogValidator;
 import org.apache.flink.table.catalog.Catalog;
 import org.apache.flink.table.descriptors.DescriptorProperties;
 import org.apache.flink.table.factories.CatalogFactory;
+import org.apache.flink.table.factories.FactoryUtil;
+import org.apache.flink.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,6 +58,8 @@ public class DTCatalogFactory implements CatalogFactory {
         properties.add(CATALOG_JDBC_BASE_URL);
         properties.add(CATALOG_JDBC_USERNAME);
         properties.add(CATALOG_JDBC_PASSWORD);
+        properties.add(CATALOG_JDBC_PROJECT_ID);
+        properties.add(CATALOG_JDBC_BASE_TENANT_ID);
 
         return properties;
     }
@@ -63,19 +67,28 @@ public class DTCatalogFactory implements CatalogFactory {
     @Override
     public Catalog createCatalog(String name, Map<String, String> properties) {
         final DescriptorProperties prop = getValidatedProperties(properties);
-
+        HashMap<String, String> map = new HashMap<>(2);
+        if (properties.get(CATALOG_JDBC_PROJECT_ID) == null) {
+            map.put(CATALOG_JDBC_PROJECT_ID, "1");
+        }
+        if (properties.get(CATALOG_JDBC_BASE_TENANT_ID) == null) {
+            map.put(CATALOG_JDBC_BASE_TENANT_ID, "1");
+        }
+        prop.putProperties(map);
         return new DTCatalog(
                 name,
                 prop.getString(CATALOG_DEFAULT_DATABASE),
                 prop.getString(CATALOG_JDBC_USERNAME),
                 prop.getString(CATALOG_JDBC_PASSWORD),
-                prop.getString(CATALOG_JDBC_BASE_URL));
+                prop.getString(CATALOG_JDBC_BASE_URL),
+                prop.getString(CATALOG_JDBC_PROJECT_ID),
+                prop.getString(CATALOG_JDBC_BASE_TENANT_ID)
+        );
     }
 
     private static DescriptorProperties getValidatedProperties(Map<String, String> properties) {
         final DescriptorProperties descriptorProperties = new DescriptorProperties(true);
         descriptorProperties.putProperties(properties);
-
         new JdbcCatalogValidator().validate(descriptorProperties);
 
         return descriptorProperties;

@@ -75,8 +75,12 @@ public class DTCatalogX1 {
                         + "    'default-database' = 'wujuan_catalog',\n"
                         + "    'username' = 'drpeco',\n"
                         + "    'password' = 'DT@Stack#123',\n"
-                        + "    'base-url' = 'jdbc:mysql://172.16.83.218:3306/'\n"
+                        + "    'base-url' = 'jdbc:mysql://172.16.83.218:3306/',\n"
+                        //+ "    'project-id' = '1',\n"
+                        + "    'tenant-id' = '1'\n"
                         + ")";
+        // project-id = 1
+        // tenant-id = 1
         tableEnv.executeSql(mysqlCatalogSQL);
 
         String useCatalog = "use CATALOG mysql_catalog";
@@ -90,6 +94,13 @@ public class DTCatalogX1 {
 
         System.out.println(catalog.listDatabases().toString());
 
+        String createDatabase = "create database wujuan_database2";
+        tableEnv.executeSql(createDatabase);
+        System.out.println(catalog.listDatabases().toString());
+
+        String dropDatabase = "drop database wujuan_database2";
+        tableEnv.executeSql(dropDatabase);
+        System.out.println(catalog.listDatabases().toString());
         //CatalogDatabase wujuan = null;
         //try {
         //    wujuan = catalog.getDatabase("wujuan");

@@ -24,6 +24,7 @@ import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.ArrayHandler;
+import org.apache.commons.dbutils.handlers.ColumnListHandler;
 import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.apache.commons.lang3.StringUtils;
@@ -31,10 +32,7 @@ import org.apache.flink.annotation.Internal;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.api.constraints.UniqueConstraint;
 import org.apache.flink.table.catalog.*;
-import org.apache.flink.table.catalog.exceptions.CatalogException;
-import org.apache.flink.table.catalog.exceptions.DatabaseNotExistException;
-import org.apache.flink.table.catalog.exceptions.TableAlreadyExistException;
-import org.apache.flink.table.catalog.exceptions.TableNotExistException;
+import org.apache.flink.table.catalog.exceptions.*;
 import org.apache.flink.table.descriptors.DescriptorProperties;
 import org.apache.flink.table.descriptors.Schema;
 import org.apache.flink.table.types.DataType;
@@ -75,8 +73,10 @@ public class MySqlCatalog extends AbstractDTCatalog {
             String defaultDatabase,
             String username,
             String pwd,
-            String baseUrl) {
-        super(catalogName, defaultDatabase, username, pwd, baseUrl);
+            String baseUrl,
+            String projectId,
+            String tenantId) {
+        super(catalogName, defaultDatabase, username, pwd, baseUrl, projectId, tenantId);
 
         String driverVersion =
                 Preconditions.checkNotNull(getDriverVersion(), "Driver version must not be null.");
@@ -109,13 +109,71 @@ public class MySqlCatalog extends AbstractDTCatalog {
 
     @Override
     public List<String> listDatabases() throws CatalogException {
-        String sql = String.format("select distinct database_name from %s;", "catalog_info");
-        return extractColumnValuesBySQL(
-                defaultUrl,
-                // "SELECT `SCHEMA_NAME` FROM `INFORMATION_SCHEMA`.`SCHEMATA`;",
-                sql,
-                1,
-                dbName -> !builtinDatabases.contains(dbName));
+        String defaultDatabase = getDefaultDatabase();
+        String catalogName = getName();
+        String projectId = getProjectId();
+        String tenantId = getTenantId();
+        String sql =
+                String.format(
+                        "select database_name from `%s`.catalog_info where catalog_name = '%s' and project_id = '%s' and tenant_id = '%s';",
+                        defaultDatabase, catalogName, projectId, tenantId);
+        List<Object> resultList;
+        try {
+            resultList = (List<Object>) queryRunner.query(connection, sql, new ColumnListHandler());
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        List<String> reuslt = resultList.stream().map(String::valueOf).collect(Collectors.toList());
+        return reuslt;
+    }
+    @Override
+    public void createDatabase(String name, CatalogDatabase database, boolean ignoreIfExists)
+            throws DatabaseAlreadyExistException, CatalogException {
+        // 先查询是否存在数据，如果已经存在了直接抛异常，表示无法建表。
+        if (databaseExists(name)) {
+            throw new DatabaseAlreadyExistException(getName(), name);
+        }
+        // 元数据存储
+        String defaultDatabase = getDefaultDatabase();
+        String catalogName = getName();
+        String projectId = getProjectId();
+        String tenantId = getTenantId();
+
+        String sql =
+                String.format(
+                        "INSERT INTO `%s`.catalog_info (catalog_name, database_name, catalog_type, project_id, tenant_id) VALUES ('%s', '%s', '%s', '%s', '%s')",
+                        defaultDatabase, catalogName, name, "mysql", projectId, tenantId);
+        try {
+            // 如果要返回第一个主键，需要传入 connection.
+            queryRunner.insert(connection, sql, new ScalarHandler<>());
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void dropDatabase(String name, boolean ignoreIfNotExists, boolean cascade)
+            throws DatabaseNotExistException, DatabaseNotEmptyException, CatalogException {
+        if (!databaseExists(name)) {
+            throw new DatabaseNotExistException(getName(), name);
+        }
+        // 元数据存储
+        String defaultDatabase = getDefaultDatabase();
+        String catalogName = getName();
+        String projectId = getProjectId();
+        String tenantId = getTenantId();
+
+        String sql =
+                String.format(
+                        "delete from `%s`.catalog_info  where catalog_name = '%s' and database_name = '%s' and project_id = '%s' and tenant_id = '%s'",
+                        defaultDatabase, catalogName, name, projectId, tenantId);
+
+        try {
+            // 如果要返回第一个主键，需要传入 connection.
+            queryRunner.execute(connection, sql);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -137,11 +195,12 @@ public class MySqlCatalog extends AbstractDTCatalog {
     @Override
     public void createTable(ObjectPath tablePath, CatalogBaseTable table, boolean ignoreIfExists)
             throws TableAlreadyExistException, DatabaseNotExistException, CatalogException {
-        //1. 是否存在
-        //String databaseName = tablePath.getDatabaseName();
-        //if (!databaseExists(databaseName)) {
-        //    throw new DatabaseNotExistException(getName(), databaseName);
-        //}
+        String databaseName = tablePath.getDatabaseName();
+        // 数据库不存在，报错。
+        if (!databaseExists(databaseName)) {
+            throw new DatabaseNotExistException(getName(), databaseName);
+        }
+        // 表如果已经存在，报错。
         if (tableExists(tablePath)) {
             throw new TableAlreadyExistException(getName(), tablePath);
         }
@@ -158,7 +217,7 @@ public class MySqlCatalog extends AbstractDTCatalog {
         // 两张表做事物型插入
         Runnable batch =
                 () -> {
-                    String tableId = null;
+                    String tableId;
                     try {
                         tableId = insertTableInfo(tablePath);
                         insertProperties(properties, tableId);
@@ -221,7 +280,6 @@ public class MySqlCatalog extends AbstractDTCatalog {
         return object;
     }
 
-        //private String insertTableInfo(String defaultDatabase, String databaseName, String tableName, String catalogId) {
         private String insertTableInfo(ObjectPath tablePath) throws TableAlreadyExistException {
         // 先查询是否存在数据，如果已经存在了直接抛异常，表示无法建表。
         if (tableExists(tablePath)) {
@@ -232,11 +290,12 @@ public class MySqlCatalog extends AbstractDTCatalog {
         String databaseName = tablePath.getDatabaseName();
         String tableName = tablePath.getObjectName();
         String catalogId = getCatalogId(tablePath);
-
+        String projectId = getProjectId();
+        String tenantId = getTenantId();
         String sql =
                 String.format(
-                        "INSERT INTO `%s`.`table_info` (catalog_id, database_name, table_name, project_id, tenant_id)  VALUES ('%s', '%s', '%s', 1, 1)",
-                        defaultDatabase, catalogId, databaseName, tableName);
+                        "INSERT INTO `%s`.`table_info` (catalog_id, database_name, table_name, project_id, tenant_id)  VALUES ('%s', '%s', '%s', '%s', '%s')",
+                        defaultDatabase, catalogId, databaseName, tableName, projectId, tenantId);
         Object tableId;
         try {
             // 如果要返回第一个主键，需要传入 connection.

@@ -43,13 +43,18 @@ public class DTCatalogUtils {
             String defaultDatabase,
             String username,
             String pwd,
-            String baseUrl) {
+            String baseUrl,
+            String projectId,
+            String tenantId
+    ) {
         DTDialect dialect = DTDialects.get(baseUrl).get();
 
         if (dialect instanceof PostgresDialect) {
-            return new PostgresCatalog(catalogName, defaultDatabase, username, pwd, baseUrl);
+            return new PostgresCatalog(
+                    catalogName, defaultDatabase, username, pwd, baseUrl, projectId, tenantId);
         } else if (dialect instanceof MySQLDialect) {
-            return new MySqlCatalog(catalogName, defaultDatabase, username, pwd, baseUrl);
+            return new MySqlCatalog(
+                    catalogName, defaultDatabase, username, pwd, baseUrl, projectId, tenantId);
         } else {
             throw new UnsupportedOperationException(
                     String.format("Catalog for '%s' is not supported yet.", dialect));

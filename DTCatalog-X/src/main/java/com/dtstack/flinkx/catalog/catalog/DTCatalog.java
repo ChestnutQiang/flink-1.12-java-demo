@@ -24,10 +24,7 @@ import org.apache.flink.annotation.VisibleForTesting;
 import org.apache.flink.table.catalog.CatalogBaseTable;
 import org.apache.flink.table.catalog.CatalogDatabase;
 import org.apache.flink.table.catalog.ObjectPath;
-import org.apache.flink.table.catalog.exceptions.CatalogException;
-import org.apache.flink.table.catalog.exceptions.DatabaseNotExistException;
-import org.apache.flink.table.catalog.exceptions.TableAlreadyExistException;
-import org.apache.flink.table.catalog.exceptions.TableNotExistException;
+import org.apache.flink.table.catalog.exceptions.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,12 +43,15 @@ public class DTCatalog extends AbstractDTCatalog {
             String defaultDatabase,
             String username,
             String pwd,
-            String baseUrl) {
-        super(catalogName, defaultDatabase, username, pwd, baseUrl);
+            String baseUrl,
+            String projectId,
+            String tenantId
+            ) {
+        super(catalogName, defaultDatabase, username, pwd, baseUrl, projectId, tenantId);
 
         internal =
                 DTCatalogUtils.createCatalog(
-                        catalogName, defaultDatabase, username, pwd, baseUrl);
+                        catalogName, defaultDatabase, username, pwd, baseUrl, projectId, tenantId);
     }
 
     @Override
@@ -77,6 +77,18 @@ public class DTCatalog extends AbstractDTCatalog {
     public CatalogDatabase getDatabase(String databaseName)
             throws DatabaseNotExistException, CatalogException {
         return internal.getDatabase(databaseName);
+    }
+
+    @Override
+    public void createDatabase(String name, CatalogDatabase database, boolean ignoreIfExists)
+            throws DatabaseAlreadyExistException, CatalogException {
+        internal.createDatabase(name, database, ignoreIfExists);
+    }
+
+    @Override
+    public void dropDatabase(String name, boolean ignoreIfNotExists, boolean cascade)
+            throws DatabaseNotExistException, DatabaseNotEmptyException, CatalogException {
+        internal.dropDatabase(name, ignoreIfNotExists, cascade);
     }
 
     // ------ tables and views ------

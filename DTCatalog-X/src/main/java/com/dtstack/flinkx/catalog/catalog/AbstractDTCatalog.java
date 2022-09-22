@@ -52,6 +52,10 @@ public abstract class AbstractDTCatalog extends AbstractCatalog {
     protected final String baseUrl;
     protected final String defaultUrl;
 
+    protected final String projectId;
+
+    protected final String tenantId;
+
     protected Connection connection;
     protected QueryRunner queryRunner;
 
@@ -60,12 +64,18 @@ public abstract class AbstractDTCatalog extends AbstractCatalog {
             String defaultDatabase,
             String username,
             String pwd,
-            String baseUrl) {
+            String baseUrl,
+            String projectId,
+            String tenantId) {
         super(catalogName, defaultDatabase);
 
         checkArgument(!StringUtils.isNullOrWhitespaceOnly(username));
         checkArgument(!StringUtils.isNullOrWhitespaceOnly(pwd));
         checkArgument(!StringUtils.isNullOrWhitespaceOnly(baseUrl));
+        checkArgument(!StringUtils.isNullOrWhitespaceOnly(projectId));
+        checkArgument(!StringUtils.isNullOrWhitespaceOnly(tenantId));
+
+
 
         DTCatalogUtils.validateJdbcUrl(baseUrl);
 
@@ -73,6 +83,8 @@ public abstract class AbstractDTCatalog extends AbstractCatalog {
         this.pwd = pwd;
         this.baseUrl = baseUrl.endsWith("/") ? baseUrl : baseUrl + "/";
         this.defaultUrl = baseUrl + defaultDatabase;
+        this.projectId = projectId;
+        this.tenantId = tenantId;
     }
 
     @Override
@@ -104,6 +116,14 @@ public abstract class AbstractDTCatalog extends AbstractCatalog {
 
     public String getBaseUrl() {
         return baseUrl;
+    }
+
+    public String getProjectId() {
+        return projectId;
+    }
+
+    public String getTenantId() {
+        return tenantId;
     }
 
     // ------ retrieve PK constraint ------

@@ -18,10 +18,11 @@
 
 package com.dtstack.flinkx.catalog.table.descriptors;
 
+import com.dtstack.flinkx.catalog.catalog.DTCatalog;
 import org.apache.flink.table.descriptors.CatalogDescriptorValidator;
 import org.apache.flink.table.descriptors.DescriptorProperties;
 
-/** Validator for {@link JdbcCatalog}. */
+/** Validator for {@link DTCatalog}. */
 public class JdbcCatalogValidator extends CatalogDescriptorValidator {
 
     public static final String CATALOG_TYPE_VALUE_DT = "DT";
@@ -29,6 +30,10 @@ public class JdbcCatalogValidator extends CatalogDescriptorValidator {
     public static final String CATALOG_JDBC_USERNAME = "username";
     public static final String CATALOG_JDBC_PASSWORD = "password";
     public static final String CATALOG_JDBC_BASE_URL = "base-url";
+    public static final String CATALOG_JDBC_PROJECT_ID = "project-id";
+    public static final String CATALOG_JDBC_BASE_TENANT_ID = "tenant-id";
+
+
 
     @Override
     public void validate(DescriptorProperties properties) {
@@ -38,5 +43,7 @@ public class JdbcCatalogValidator extends CatalogDescriptorValidator {
         properties.validateString(CATALOG_JDBC_USERNAME, false, 1);
         properties.validateString(CATALOG_JDBC_PASSWORD, false, 1);
         properties.validateString(CATALOG_DEFAULT_DATABASE, false, 1);
+        properties.validateString(CATALOG_JDBC_PROJECT_ID, true, 1);
+        properties.validateString(CATALOG_JDBC_BASE_TENANT_ID, true, 1);
     }
 }

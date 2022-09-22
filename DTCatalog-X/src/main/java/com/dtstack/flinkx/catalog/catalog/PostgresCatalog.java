@@ -70,8 +70,11 @@ public class PostgresCatalog extends AbstractDTCatalog {
             String defaultDatabase,
             String username,
             String pwd,
-            String baseUrl) {
-        super(catalogName, defaultDatabase, username, pwd, baseUrl);
+            String baseUrl,
+            String projectId,
+            String tenantId) {
+
+        super(catalogName, defaultDatabase, username, pwd, baseUrl, projectId, tenantId);
     }
 
     // ------ databases ------
