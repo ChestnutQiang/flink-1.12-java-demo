@@ -20,6 +20,12 @@ package com.dtstack.flinkx.catalog.catalog;
 
 import com.dtstack.flinkx.catalog.dialect.DTDialectTypeMapper;
 import com.dtstack.flinkx.catalog.dialect.MySqlTypeMapper;
+import org.apache.commons.compress.utils.Lists;
+import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.handlers.ArrayHandler;
+import org.apache.commons.dbutils.handlers.MapListHandler;
+import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.annotation.Internal;
 import org.apache.flink.table.api.TableSchema;
@@ -27,7 +33,10 @@ import org.apache.flink.table.api.constraints.UniqueConstraint;
 import org.apache.flink.table.catalog.*;
 import org.apache.flink.table.catalog.exceptions.CatalogException;
 import org.apache.flink.table.catalog.exceptions.DatabaseNotExistException;
+import org.apache.flink.table.catalog.exceptions.TableAlreadyExistException;
 import org.apache.flink.table.catalog.exceptions.TableNotExistException;
+import org.apache.flink.table.descriptors.DescriptorProperties;
+import org.apache.flink.table.descriptors.Schema;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.util.Preconditions;
 import org.slf4j.Logger;
@@ -37,6 +46,7 @@ import java.sql.*;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static com.dtstack.flinkx.catalog.table.JdbcConnectorOptions.*;
 import static com.dtstack.flinkx.catalog.table.JdbcDynamicTableFactory.IDENTIFIER;
@@ -78,13 +88,36 @@ public class MySqlCatalog extends AbstractDTCatalog {
     }
 
     @Override
+    public void open() throws CatalogException {
+        // Step 1: 加载数据库驱动
+        DbUtils.loadDriver("com.mysql.cj.jdbc.Driver");
+        // Step 2: 获取数据库连接对象
+        try {
+            connection = DriverManager.getConnection(defaultUrl, username, pwd);
+            queryRunner = new QueryRunner();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        // Step 3: 创建DbUtils核心工具类对象
+    }
+
+    @Override
+    public void close() throws CatalogException {
+        super.close();
+        DbUtils.closeQuietly(connection);
+    }
+
+    @Override
     public List<String> listDatabases() throws CatalogException {
+        String sql = String.format("select distinct database_name from %s;", "catalog_info");
         return extractColumnValuesBySQL(
                 defaultUrl,
-                "SELECT `SCHEMA_NAME` FROM `INFORMATION_SCHEMA`.`SCHEMATA`;",
+                // "SELECT `SCHEMA_NAME` FROM `INFORMATION_SCHEMA`.`SCHEMATA`;",
+                sql,
                 1,
                 dbName -> !builtinDatabases.contains(dbName));
     }
+
     @Override
     public CatalogDatabase getDatabase(String databaseName)
             throws DatabaseNotExistException, CatalogException {
@@ -100,6 +133,199 @@ public class MySqlCatalog extends AbstractDTCatalog {
     }
 
     // ------ tables ------
+
+    @Override
+    public void createTable(ObjectPath tablePath, CatalogBaseTable table, boolean ignoreIfExists)
+            throws TableAlreadyExistException, DatabaseNotExistException, CatalogException {
+        //1. 是否存在
+        //String databaseName = tablePath.getDatabaseName();
+        //if (!databaseExists(databaseName)) {
+        //    throw new DatabaseNotExistException(getName(), databaseName);
+        //}
+        if (tableExists(tablePath)) {
+            throw new TableAlreadyExistException(getName(), tablePath);
+        }
+        Map<String, String> properties = new HashMap<>();
+        // 元数据存储
+        Map<String, String> options = table.getOptions();
+
+        DescriptorProperties tableSchemaProps = new DescriptorProperties(true);
+        tableSchemaProps.putTableSchema(Schema.SCHEMA, table.getSchema());
+        Map<String, String> stringStringMap = tableSchemaProps.asMap();
+
+        properties.putAll(options);
+        properties.putAll(stringStringMap);
+        // 两张表做事物型插入
+        Runnable batch =
+                () -> {
+                    String tableId = null;
+                    try {
+                        tableId = insertTableInfo(tablePath);
+                        insertProperties(properties, tableId);
+                    } catch (TableAlreadyExistException e) {
+                        throw new RuntimeException(e);
+                    }
+                };
+        executeBatchInTransaction(batch);
+    }
+
+    private void executeBatchInTransaction(Runnable batch) {
+        try {
+            connection.setAutoCommit(false);
+            batch.run();
+            connection.commit();
+        } catch (SQLException e) {
+            try {
+                connection.rollback();
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
+            throw new RuntimeException(e);
+        } finally{
+            try {
+                connection.setAutoCommit(true);
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    private void insertProperties(Map<String, String> properties, String tableId) {
+        String defaultDatabase = getDefaultDatabase();
+        String sql =
+                String.format(
+                        "INSERT INTO `%s`.`properties_info` (table_id, `key`, `value`) VALUES ('%s' , ?, ?);",
+                        defaultDatabase, tableId);
+        Object[][] params = getMapKeyValue(properties);
+        try {
+            queryRunner.batch(connection, sql, params);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static Object[][] getMapKeyValue(Map map) {
+        Object[][] object = null;
+        if ((map != null) && (!map.isEmpty())) {
+            int size = map.size();
+            object = new Object[size][2];
+            Iterator iterator = map.entrySet().iterator();
+            for (int i = 0; i < size; i++) {
+                Map.Entry entry = (Map.Entry) iterator.next();
+                Object key = entry.getKey();
+                Object value = entry.getValue();
+                object[i][0] = key;
+                object[i][1] = value;
+            }
+        }
+        return object;
+    }
+
+        //private String insertTableInfo(String defaultDatabase, String databaseName, String tableName, String catalogId) {
+        private String insertTableInfo(ObjectPath tablePath) throws TableAlreadyExistException {
+        // 先查询是否存在数据，如果已经存在了直接抛异常，表示无法建表。
+        if (tableExists(tablePath)) {
+            throw new TableAlreadyExistException(getName(), tablePath);
+        }
+        // 元数据存储
+        String defaultDatabase = getDefaultDatabase();
+        String databaseName = tablePath.getDatabaseName();
+        String tableName = tablePath.getObjectName();
+        String catalogId = getCatalogId(tablePath);
+
+        String sql =
+                String.format(
+                        "INSERT INTO `%s`.`table_info` (catalog_id, database_name, table_name, project_id, tenant_id)  VALUES ('%s', '%s', '%s', 1, 1)",
+                        defaultDatabase, catalogId, databaseName, tableName);
+        Object tableId;
+        try {
+            // 如果要返回第一个主键，需要传入 connection.
+            tableId = queryRunner.insert(connection, sql, new ScalarHandler<>());
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return String.valueOf(tableId);
+    }
+
+
+    private String getCatalogId(ObjectPath tablePath) {
+        // 元数据存储
+        String defaultDatabase = getDefaultDatabase();
+        String catalogName = getName();
+        String databaseName = tablePath.getDatabaseName();
+        String sql =
+                String.format(
+                        "select id from `%s`.catalog_info where catalog_name = '%s' and database_name = '%s'",
+                        defaultDatabase, catalogName, databaseName);
+        Object[] catalogInfo;
+        try {
+            catalogInfo = queryRunner.query(connection, sql, new ArrayHandler());
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        if(catalogInfo == null) {
+            throw new CatalogException(String.format("Catalog : %s, database : %s is not exist.", catalogName, databaseName));
+        }
+        return String.valueOf(catalogInfo[0]);
+    }
+
+    private String getTableId(ObjectPath tablePath) {
+        String catalogId = getCatalogId(tablePath);
+        // 元数据存储
+        String defaultDatabase = getDefaultDatabase();
+        String catalogName = getName();
+        String databaseName = tablePath.getDatabaseName();
+        String tableName = tablePath.getObjectName();
+
+        String sql =
+                String.format(
+                        "select * from `%s`.table_info where catalog_id = '%s' and database_name = '%s' and table_name = '%s'",
+                        defaultDatabase, catalogId, databaseName, tableName);
+        Object[] catalogInfo;
+        try {
+            catalogInfo = queryRunner.query(connection, sql, new ArrayHandler());
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        if(catalogInfo == null || catalogInfo.length == 0) {
+            throw new CatalogException(String.format("Catalog : %s, database : %s is not exist.", catalogName, databaseName));
+        }
+        return String.valueOf(catalogInfo[0]);
+    }
+
+    public Map<String, String> getTableProperties(ObjectPath tablePath) {
+        // 元数据存储
+        String defaultDatabase = getDefaultDatabase();
+        String catalogName = getName();
+        String databaseName = tablePath.getDatabaseName();
+        String tableId = getTableId(tablePath);
+        String sql =
+                String.format(
+                        "select * from `%s`.properties_info where table_id = '%s'",
+                        defaultDatabase, tableId);
+        HashMap<String, String> result = new HashMap<>();
+        List<Map<String, Object>> propertiesInfo;
+        try {
+            propertiesInfo = queryRunner.query(connection, sql, new MapListHandler());
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        if(propertiesInfo == null || propertiesInfo.size() == 0) {
+            throw new CatalogException(String.format("Catalog : %s, database : %s is not exist.", catalogName, databaseName));
+        }
+        propertiesInfo.stream()
+                .map(
+                        row -> {
+                            Object key = row.get("key");
+                            Object value = row.get("value");
+                            result.put(String.valueOf(key), String.valueOf(value));
+                            return value;
+                        }).collect(Collectors.toList());
+        return result;
+    }
 
     @Override
     public List<String> listTables(String databaseName)
@@ -118,6 +344,18 @@ public class MySqlCatalog extends AbstractDTCatalog {
                 databaseName);
     }
 
+    void test() {
+        ObjectPath tablePath = new ObjectPath("","");
+
+        String defaultDatabase = getDefaultDatabase();
+        String catalogName = getName();
+        String databaseName = tablePath.getDatabaseName();
+        String tableName = tablePath.getObjectName();
+        //TableSchema schema = table.getSchema();
+        //String[] fieldNames = schema.getFieldNames();
+        //DataType[] fieldDataTypes = schema.getFieldDataTypes();
+    }
+
     @Override
     public CatalogBaseTable getTable(ObjectPath tablePath)
             throws TableNotExistException, CatalogException {
@@ -126,61 +364,65 @@ public class MySqlCatalog extends AbstractDTCatalog {
             throw new TableNotExistException(getName(), tablePath);
         }
 
-        String databaseName = tablePath.getDatabaseName();
-        String dbUrl = baseUrl + databaseName;
+        Map<String,String> properties = getTableProperties(tablePath);
+        TableSchema tableSchema;
+        DescriptorProperties tableSchemaProps = new DescriptorProperties(true);
+        tableSchemaProps.putProperties(properties);
+        tableSchema =
+                tableSchemaProps
+                        .getOptionalTableSchema(Schema.SCHEMA)
+                        .orElseGet(
+                                () ->
+                                        tableSchemaProps
+                                                .getOptionalTableSchema("generic.table.schema")
+                                                .orElseThrow(
+                                                        () ->
+                                                                new CatalogException(
+                                                                        "Failed to get table schema from properties for generic table "
+                                                                                + tablePath)));
+        List<String>  partitionKeys = tableSchemaProps.getPartitionKeys();
+        // remove the schema from properties
+        properties = CatalogTableImpl.removeRedundant(properties, tableSchema, partitionKeys);
 
-        try (Connection conn = DriverManager.getConnection(dbUrl, username, pwd)) {
-            DatabaseMetaData metaData = conn.getMetaData();
-            Optional<UniqueConstraint> primaryKey =
-                    getPrimaryKey(metaData, getSchemaName(tablePath), getTableName(tablePath));
+        String url = properties.get("url");
+        String connector = properties.get("connector");
+        String tableName = properties.get("table-name");
+        String username = properties.get("username");
+        String password = properties.get("password");
 
-            PreparedStatement ps =
-                    conn.prepareStatement(
-                            String.format("SELECT * FROM %s;", getSchemaTableName(tablePath)));
+        Map<String, String> props = new HashMap<>();
+        props.put(CONNECTOR.key(), connector);
+        props.put(URL.key(), url);
+        props.put(USERNAME.key(), username);
+        props.put(PASSWORD.key(), password);
+        props.put(TABLE_NAME.key(), tableName);
 
-            ResultSetMetaData resultSetMetaData = ps.getMetaData();
-
-            String[] columnNames = new String[resultSetMetaData.getColumnCount()];
-            DataType[] types = new DataType[resultSetMetaData.getColumnCount()];
-
-            for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++) {
-                columnNames[i - 1] = resultSetMetaData.getColumnName(i);
-                types[i - 1] = fromJDBCType(tablePath, resultSetMetaData, i);
-                if (resultSetMetaData.isNullable(i) == ResultSetMetaData.columnNoNulls) {
-                    types[i - 1] = types[i - 1].notNull();
-                }
-            }
-
-            TableSchema.Builder tableBuilder = new TableSchema.Builder().fields(columnNames, types);
-            primaryKey.ifPresent(
-                    pk ->
-                            tableBuilder.primaryKey(
-                                    pk.getName(), pk.getColumns().toArray(new String[0])));
-            TableSchema tableSchema = tableBuilder.build();
-
-            Map<String, String> props = new HashMap<>();
-            props.put(CONNECTOR.key(), IDENTIFIER);
-            props.put(URL.key(), dbUrl);
-            props.put(USERNAME.key(), username);
-            props.put(PASSWORD.key(), pwd);
-            props.put(TABLE_NAME.key(), getSchemaTableName(tablePath));
-            return new CatalogTableImpl(tableSchema, props, "");
-        } catch (Exception e) {
-            throw new CatalogException(
-                    String.format("Failed getting table %s", tablePath.getFullName()), e);
-        }
+        return new CatalogTableImpl(tableSchema, props, "");
     }
+
+
     @Override
     public boolean tableExists(ObjectPath tablePath) throws CatalogException {
-        return !extractColumnValuesBySQL(
-                        baseUrl,
-                        "SELECT TABLE_NAME FROM information_schema.`TABLES` "
-                                + "WHERE TABLE_SCHEMA=? and TABLE_NAME=?",
-                        1,
-                        null,
-                        tablePath.getDatabaseName(),
-                        tablePath.getObjectName())
-                .isEmpty();
+        String defaultDatabase = getDefaultDatabase();
+
+        String catalogName = getName();
+        String databaseName = tablePath.getDatabaseName();
+        String tableName = tablePath.getObjectName();
+        String catalogId = getCatalogId(tablePath);
+        String sql =
+                String.format(
+                        "select * from `%s`.table_info where catalog_id = '%s' and database_name = '%s' and table_name = '%s'",
+                        defaultDatabase, catalogId, databaseName, tableName);
+        Object[] catalogInfo;
+        try {
+            catalogInfo = queryRunner.query(connection, sql, new ArrayHandler());
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        if (catalogInfo == null || catalogInfo.length == 0) {
+            return false;
+        }
+        return true;
     }
 
     private String getDatabaseVersion() {

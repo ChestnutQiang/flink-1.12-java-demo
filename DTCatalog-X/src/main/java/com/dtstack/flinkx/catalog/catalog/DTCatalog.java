@@ -18,6 +18,7 @@
 
 package com.dtstack.flinkx.catalog.catalog;
 
+import org.apache.commons.dbutils.DbUtils;
 import org.apache.flink.annotation.PublicEvolving;
 import org.apache.flink.annotation.VisibleForTesting;
 import org.apache.flink.table.catalog.CatalogBaseTable;
@@ -25,6 +26,7 @@ import org.apache.flink.table.catalog.CatalogDatabase;
 import org.apache.flink.table.catalog.ObjectPath;
 import org.apache.flink.table.catalog.exceptions.CatalogException;
 import org.apache.flink.table.catalog.exceptions.DatabaseNotExistException;
+import org.apache.flink.table.catalog.exceptions.TableAlreadyExistException;
 import org.apache.flink.table.catalog.exceptions.TableNotExistException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,6 +52,18 @@ public class DTCatalog extends AbstractDTCatalog {
         internal =
                 DTCatalogUtils.createCatalog(
                         catalogName, defaultDatabase, username, pwd, baseUrl);
+    }
+
+    @Override
+    public void open() throws CatalogException {
+        super.open();
+        internal.open();
+    }
+
+    @Override
+    public void close() throws CatalogException {
+        super.close();
+        internal.close();
     }
 
     // ------ databases -----
@@ -87,6 +101,11 @@ public class DTCatalog extends AbstractDTCatalog {
         } catch (DatabaseNotExistException e) {
             return false;
         }
+    }
+
+    @Override
+    public void createTable(ObjectPath tablePath, CatalogBaseTable table, boolean ignoreIfExists) throws TableAlreadyExistException, DatabaseNotExistException, CatalogException {
+        internal.createTable(tablePath, table, ignoreIfExists);
     }
 
     // ------ getters ------

@@ -21,6 +21,8 @@ package com.dtstack.flinkx.catalog.catalog;
 
 
 import org.apache.commons.compress.utils.Lists;
+import org.apache.commons.dbutils.DbUtils;
+import org.apache.commons.dbutils.QueryRunner;
 import org.apache.flink.table.api.ValidationException;
 import org.apache.flink.table.api.constraints.UniqueConstraint;
 import org.apache.flink.table.catalog.*;
@@ -49,6 +51,9 @@ public abstract class AbstractDTCatalog extends AbstractCatalog {
     protected final String pwd;
     protected final String baseUrl;
     protected final String defaultUrl;
+
+    protected Connection connection;
+    protected QueryRunner queryRunner;
 
     public AbstractDTCatalog(
             String catalogName,
@@ -412,4 +417,94 @@ public abstract class AbstractDTCatalog extends AbstractCatalog {
         }
     }
 
+    protected List<String> extractColumnValuesBySQLWithTransaction(
+            String connUrl,
+            List<String> sql,
+            int columnIndex,
+            Predicate<String> filterFunc,
+            Object... params) {
+
+        List<String> columnValues = Lists.newArrayList();
+
+        Connection conn = openConnection(connUrl);
+        try {
+            // 关闭自动提交:
+            conn.setAutoCommit(false);
+            // 执行多条SQL语句:
+            columnValues = executeSQL(conn, sql, columnIndex, filterFunc, params);
+            // 提交事务:
+            conn.commit();
+
+            return columnValues;
+        } catch (SQLException e) {
+            // 回滚事务:
+            try {
+                conn.rollback();
+            } catch (SQLException ex) {
+                throw new RuntimeException(ex);
+            }
+        } finally {
+            try {
+                conn.setAutoCommit(true);
+                conn.close();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return columnValues;
+    }
+
+    private Connection openConnection(String connUrl) {
+        Connection conn = null;
+        try {
+            conn = DriverManager.getConnection(connUrl, username, pwd);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return conn;
+    }
+
+    private List<String> executeSQL(
+            Connection conn,
+            List<String> sqls,
+            int columnIndex,
+            Predicate<String> filterFunc,
+            Object[] params) {
+
+        List<String> columnValues = Lists.newArrayList();
+
+        for (int index = 0; index < sqls.size(); index++) {
+            String sql = sqls.get(index);
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                if (Objects.nonNull(params) && params.length > 0) {
+                    for (int i = 0; i < params.length; i++) {
+                        ps.setObject(i + 1, params[i]);
+                    }
+                }
+                ResultSet rs = ps.executeQuery();
+                // 最后一调，返回结果。
+                if (index == sqls.size() - 1) {
+                    while (rs.next()) {
+                        String columnValue = rs.getString(columnIndex);
+                        if (Objects.isNull(filterFunc) || filterFunc.test(columnValue)) {
+                            columnValues.add(columnValue);
+                        }
+                    }
+                    return columnValues;
+                }
+
+            } catch (Exception e) {
+                try {
+                    throw new CatalogException(
+                            String.format(
+                                    "The following SQL query could not be executed (%s): %s",
+                                    conn.getMetaData().getURL(), sql),
+                            e);
+                } catch (SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        }
+        return columnValues;
+    }
 }
