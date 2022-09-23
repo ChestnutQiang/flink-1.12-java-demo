@@ -112,7 +112,7 @@ public class MySqlDTCatalog extends AbstractDTCatalog {
         String tenantId = getTenantId();
         String sql =
                 String.format(
-                        "select database_name from `%s`.catalog_info where catalog_name = '%s' and project_id = '%s' and tenant_id = '%s';",
+                        "select database_name from `%s`.database_info where catalog_name = '%s' and project_id = '%s' and tenant_id = '%s';",
                         defaultDatabase, catalogName, projectId, tenantId);
         List<Object> resultList;
         try {
@@ -128,6 +128,9 @@ public class MySqlDTCatalog extends AbstractDTCatalog {
             throws DatabaseAlreadyExistException, CatalogException {
         // 先查询是否存在数据，如果已经存在了直接抛异常，表示无法建表。
         if (databaseExists(name)) {
+            if (ignoreIfExists) {
+                return;
+            }
             throw new DatabaseAlreadyExistException(getName(), name);
         }
         // 元数据存储
@@ -138,7 +141,7 @@ public class MySqlDTCatalog extends AbstractDTCatalog {
 
         String sql =
                 String.format(
-                        "INSERT INTO `%s`.catalog_info (catalog_name, database_name, catalog_type, project_id, tenant_id) VALUES ('%s', '%s', '%s', '%s', '%s')",
+                        "INSERT INTO `%s`.database_info (catalog_name, database_name, catalog_type, project_id, tenant_id) VALUES ('%s', '%s', '%s', '%s', '%s')",
                         defaultDatabase, catalogName, name, "mysql", projectId, tenantId);
         try {
             // 如果要返回第一个主键，需要传入 connection.
@@ -152,6 +155,9 @@ public class MySqlDTCatalog extends AbstractDTCatalog {
     public void dropDatabase(String name, boolean ignoreIfNotExists, boolean cascade)
             throws DatabaseNotExistException, DatabaseNotEmptyException, CatalogException {
         if (!databaseExists(name)) {
+            if (ignoreIfNotExists) {
+                return;
+            }
             throw new DatabaseNotExistException(getName(), name);
         }
         // 元数据存储
@@ -162,7 +168,7 @@ public class MySqlDTCatalog extends AbstractDTCatalog {
 
         String sql =
                 String.format(
-                        "delete from `%s`.catalog_info  where catalog_name = '%s' and database_name = '%s' and project_id = '%s' and tenant_id = '%s'",
+                        "delete from `%s`.database_info  where catalog_name = '%s' and database_name = '%s' and project_id = '%s' and tenant_id = '%s'",
                         defaultDatabase, catalogName, name, projectId, tenantId);
 
         try {
@@ -195,10 +201,16 @@ public class MySqlDTCatalog extends AbstractDTCatalog {
         String databaseName = tablePath.getDatabaseName();
         // 数据库不存在，报错。
         if (!databaseExists(databaseName)) {
+            if (ignoreIfExists) {
+                return;
+            }
             throw new DatabaseNotExistException(getName(), databaseName);
         }
         // 表如果已经存在，报错。
         if (tableExists(tablePath)) {
+            if (ignoreIfExists) {
+                return;
+            }
             throw new TableAlreadyExistException(getName(), tablePath);
         }
         Map<String, String> properties = new HashMap<>();
@@ -225,19 +237,71 @@ public class MySqlDTCatalog extends AbstractDTCatalog {
         executeBatchInTransaction(batch);
     }
 
+    @Override
+    public void dropTable(ObjectPath tablePath, boolean ignoreIfNotExists)
+            throws TableNotExistException, CatalogException {
+        String databaseName = tablePath.getDatabaseName();
+        // 表如果不存在，报错。
+        if (!tableExists(tablePath)) {
+            if (ignoreIfNotExists) {
+                return;
+            }
+            throw new TableNotExistException(getName(), tablePath);
+        }
+        // 两张表做事物型删除
+        Runnable batch =
+                () -> {
+                    try {
+                        deleteProperties(tablePath);
+                        deleteTableInfo(tablePath);
+                    } catch (TableAlreadyExistException e) {
+                        throw new RuntimeException(e);
+                    }
+                };
+        executeBatchInTransaction(batch);
+    }
+
+    @Override
+    public void renameTable(ObjectPath tablePath, String newTableName, boolean ignoreIfNotExists)
+            throws TableNotExistException, TableAlreadyExistException, CatalogException {
+        // 表如果不存在，报错。
+        if (!tableExists(tablePath)) {
+            if (ignoreIfNotExists) {
+                return;
+            }
+            throw new TableNotExistException(getName(), tablePath);
+        }
+        throw new UnsupportedOperationException();
+        //     TODO update 语句
+    }
+
+    @Override
+    public void alterTable(
+            ObjectPath tablePath, CatalogBaseTable newTable, boolean ignoreIfNotExists)
+            throws TableNotExistException, CatalogException {
+        // 表如果不存在，报错。
+        if (!tableExists(tablePath)) {
+            if (ignoreIfNotExists) {
+                return;
+            }
+            throw new TableNotExistException(getName(), tablePath);
+        }
+        throw new UnsupportedOperationException();
+    }
+
     private void executeBatchInTransaction(Runnable batch) {
         try {
             connection.setAutoCommit(false);
             batch.run();
             connection.commit();
-        } catch (SQLException e) {
+        } catch (Throwable e) {
             try {
                 connection.rollback();
             } catch (SQLException ex) {
                 throw new RuntimeException(ex);
             }
             throw new RuntimeException(e);
-        } finally{
+        } finally {
             try {
                 connection.setAutoCommit(true);
             } catch (SQLException e) {
@@ -255,6 +319,20 @@ public class MySqlDTCatalog extends AbstractDTCatalog {
         Object[][] params = getMapKeyValue(properties);
         try {
             queryRunner.batch(connection, sql, params);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void deleteProperties(ObjectPath tablePath) {
+        String tableId = getTableId(tablePath);
+        String defaultDatabase = getDefaultDatabase();
+        String sql =
+                String.format(
+                        "delete from `%s`.`properties_info` where table_id = '%s'",
+                        defaultDatabase, tableId);
+        try {
+            queryRunner.execute(connection, sql);
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -303,6 +381,24 @@ public class MySqlDTCatalog extends AbstractDTCatalog {
         return String.valueOf(tableId);
     }
 
+    private void deleteTableInfo(ObjectPath tablePath) throws TableAlreadyExistException {
+        // 元数据存储
+        String defaultDatabase = getDefaultDatabase();
+        String databaseName = tablePath.getDatabaseName();
+        String tableName = tablePath.getObjectName();
+        String catalogId = getCatalogId(tablePath);
+        String projectId = getProjectId();
+        String tenantId = getTenantId();
+        String sql =
+                String.format(
+                        "delete from `%s`.table_info where catalog_id = '%s' and database_name = '%s' and table_name = '%s' and project_id = '%s' and tenant_id = '%s'",
+                        defaultDatabase, catalogId, databaseName, tableName, projectId, tenantId);
+        try {
+            queryRunner.execute(connection, sql);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     private String getCatalogId(ObjectPath tablePath) {
         // 元数据存储
@@ -311,7 +407,7 @@ public class MySqlDTCatalog extends AbstractDTCatalog {
         String databaseName = tablePath.getDatabaseName();
         String sql =
                 String.format(
-                        "select id from `%s`.catalog_info where catalog_name = '%s' and database_name = '%s'",
+                        "select id from `%s`.database_info where catalog_name = '%s' and database_name = '%s'",
                         defaultDatabase, catalogName, databaseName);
         Object[] catalogInfo;
         try {

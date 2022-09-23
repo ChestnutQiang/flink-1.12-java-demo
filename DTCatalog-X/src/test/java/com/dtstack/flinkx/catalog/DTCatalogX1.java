@@ -146,4 +146,147 @@ public class DTCatalogX1 {
         tableResult.print();
     }
 
+
+
+    @Test
+    public void createCatalog() {
+
+        String mysqlCatalogSQL =
+                "CREATE CATALOG mysql_catalog WITH(\n"
+                        + "    'type' = 'DT',\n"
+                        + "    'default-database' = 'wujuan_catalog',\n"
+                        + "    'username' = 'drpeco',\n"
+                        + "    'password' = 'DT@Stack#123',\n"
+                        + "    'base-url' = 'jdbc:mysql://172.16.83.218:3306/',\n"
+                        //+ "    'project-id' = '1',\n"
+                        + "    'tenant-id' = '1'\n"
+                        + ")";
+        // project-id = 1
+        // tenant-id = 1
+        tableEnv.executeSql(mysqlCatalogSQL);
+
+        String useCatalog = "use CATALOG mysql_catalog";
+        tableEnv.executeSql(useCatalog);
+
+    }
+
+    @Test
+    public void createDatabase() {
+
+        String mysqlCatalogSQL =
+                "CREATE CATALOG mysql_catalog1 WITH(\n"
+                        + "    'type' = 'DT',\n"
+                        + "    'default-database' = 'wujuan_catalog',\n"
+                        + "    'username' = 'drpeco',\n"
+                        + "    'password' = 'DT@Stack#123',\n"
+                        + "    'base-url' = 'jdbc:mysql://172.16.83.218:3306/',\n"
+                        //+ "    'project-id' = '1',\n"
+                        + "    'tenant-id' = '1'\n"
+                        + ")";
+
+        tableEnv.executeSql(mysqlCatalogSQL);
+
+        String useCatalog = "use CATALOG mysql_catalog1";
+        tableEnv.executeSql(useCatalog);
+
+        Optional<Catalog> flink_catalog = tableEnv.getCatalog("mysql_catalog1");
+        Catalog catalog = flink_catalog.get();
+
+        System.out.println(catalog.listDatabases().toString());
+
+        String createDatabase = "create database wujuan_database2";
+        tableEnv.executeSql(createDatabase);
+        System.out.println(catalog.listDatabases().toString());
+
+        String dropDatabase = "drop database wujuan_database2";
+        //tableEnv.executeSql(dropDatabase);
+        System.out.println(catalog.listDatabases().toString());
+
+    }
+
+
+    @Test
+    public void createTable() {
+
+        String mysqlCatalogSQL =
+                "CREATE CATALOG mysql_catalog1 WITH(\n"
+                        + "    'type' = 'DT',\n"
+                        + "    'default-database' = 'wujuan_catalog',\n"
+                        + "    'username' = 'drpeco',\n"
+                        + "    'password' = 'DT@Stack#123',\n"
+                        + "    'base-url' = 'jdbc:mysql://172.16.83.218:3306/',\n"
+                        //+ "    'project-id' = '1',\n"
+                        + "    'tenant-id' = '1'\n"
+                        + ")";
+        // project-id = 1
+        // tenant-id = 1
+        tableEnv.executeSql(mysqlCatalogSQL);
+
+        String useCatalog = "use CATALOG mysql_catalog1";
+        tableEnv.executeSql(useCatalog);
+
+        String mysqlSource =
+                ""
+                        + "CREATE TABLE if not exists mysql_catalog1.wujuan_database2.wujuan_table (\n"
+                        + " id int,\n"
+                        + " name string,\n"
+                        + " age bigint,\n"
+                        + " primary key (id) not enforced\n"
+                        + ") with (\n"
+                        + " 'connector' = 'jdbc',\n"
+                        + " 'url' = 'jdbc:mysql://172.16.83.218:3306/wujuan?useSSL=false',\n"
+                        + " 'table-name' = 't2',\n"
+                        + " 'username' = 'drpeco',\n"
+                        + " 'password' = 'DT@Stack#123'\n"
+                        + ")";
+        //
+        tableEnv.executeSql(mysqlSource);
+
+    }
+
+    @Test
+    public void dropTable() {
+
+        String mysqlCatalogSQL =
+                "CREATE CATALOG mysql_catalog2 WITH(\n"
+                        + "    'type' = 'DT',\n"
+                        + "    'default-database' = 'wujuan_catalog',\n"
+                        + "    'username' = 'drpeco',\n"
+                        + "    'password' = 'DT@Stack#123',\n"
+                        + "    'base-url' = 'jdbc:mysql://172.16.83.218:3306/',\n"
+                        //+ "    'project-id' = '1',\n"
+                        + "    'tenant-id' = '1'\n"
+                        + ")";
+        // project-id = 1
+        // tenant-id = 1
+        tableEnv.executeSql(mysqlCatalogSQL);
+
+        String useCatalog = "use CATALOG mysql_catalog2";
+        tableEnv.executeSql(useCatalog);
+
+        String createDatabase = "create database if not exists mysql_catalog2.wujuan_database2";
+        tableEnv.executeSql(createDatabase);
+
+        String mysqlSource =
+                ""
+                        + "CREATE TABLE if not exists mysql_catalog2.wujuan_database2.wujuan_table (\n"
+                        + " id int,\n"
+                        + " name string,\n"
+                        + " age bigint,\n"
+                        + " primary key (id) not enforced\n"
+                        + ") with (\n"
+                        + " 'connector' = 'jdbc',\n"
+                        + " 'url' = 'jdbc:mysql://172.16.83.218:3306/wujuan?useSSL=false',\n"
+                        + " 'table-name' = 't2',\n"
+                        + " 'username' = 'drpeco',\n"
+                        + " 'password' = 'DT@Stack#123'\n"
+                        + ")";
+        //
+        tableEnv.executeSql(mysqlSource);
+
+        String deleteTable = "drop table mysql_catalog2.wujuan_database2.wujuan_table";
+        tableEnv.executeSql(deleteTable);
+
+    }
+
 }

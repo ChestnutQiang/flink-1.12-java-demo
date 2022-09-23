@@ -106,6 +106,25 @@ public class DTCatalog extends AbstractDTCatalog {
     }
 
     @Override
+    public void dropTable(ObjectPath tablePath, boolean ignoreIfNotExists)
+            throws TableNotExistException, CatalogException {
+        internal.dropTable(tablePath, ignoreIfNotExists);
+    }
+
+    @Override
+    public void renameTable(ObjectPath tablePath, String newTableName, boolean ignoreIfNotExists)
+            throws TableNotExistException, TableAlreadyExistException, CatalogException {
+        internal.renameTable(tablePath, newTableName, ignoreIfNotExists);
+    }
+
+    @Override
+    public void alterTable(
+            ObjectPath tablePath, CatalogBaseTable newTable, boolean ignoreIfNotExists)
+            throws TableNotExistException, CatalogException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public boolean tableExists(ObjectPath tablePath) throws CatalogException {
         try {
             return databaseExists(tablePath.getDatabaseName())
