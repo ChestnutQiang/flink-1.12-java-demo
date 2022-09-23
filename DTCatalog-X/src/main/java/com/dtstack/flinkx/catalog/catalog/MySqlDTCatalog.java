@@ -20,7 +20,6 @@ package com.dtstack.flinkx.catalog.catalog;
 
 import com.dtstack.flinkx.catalog.dialect.DTDialectTypeMapper;
 import com.dtstack.flinkx.catalog.dialect.MySqlTypeMapper;
-import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.ArrayHandler;
@@ -30,7 +29,6 @@ import org.apache.commons.dbutils.handlers.ScalarHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.flink.annotation.Internal;
 import org.apache.flink.table.api.TableSchema;
-import org.apache.flink.table.api.constraints.UniqueConstraint;
 import org.apache.flink.table.catalog.*;
 import org.apache.flink.table.catalog.exceptions.*;
 import org.apache.flink.table.descriptors.DescriptorProperties;
@@ -47,14 +45,13 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.dtstack.flinkx.catalog.table.JdbcConnectorOptions.*;
-import static com.dtstack.flinkx.catalog.table.JdbcDynamicTableFactory.IDENTIFIER;
 import static org.apache.flink.table.factories.FactoryUtil.CONNECTOR;
 
 /** Catalog for MySQL. */
 @Internal
-public class MySqlCatalog extends AbstractDTCatalog {
+public class MySqlDTCatalog extends AbstractDTCatalog {
 
-    private static final Logger LOG = LoggerFactory.getLogger(MySqlCatalog.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MySqlDTCatalog.class);
 
     private final DTDialectTypeMapper dialectTypeMapper;
 
@@ -68,7 +65,7 @@ public class MySqlCatalog extends AbstractDTCatalog {
                 }
             };
 
-    public MySqlCatalog(
+    public MySqlDTCatalog(
             String catalogName,
             String defaultDatabase,
             String username,

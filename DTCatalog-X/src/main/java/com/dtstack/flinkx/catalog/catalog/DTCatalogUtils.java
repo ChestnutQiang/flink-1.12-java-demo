@@ -50,10 +50,10 @@ public class DTCatalogUtils {
         DTDialect dialect = DTDialects.get(baseUrl).get();
 
         if (dialect instanceof PostgresDialect) {
-            return new PostgresCatalog(
+            return new PostgresDTCatalog(
                     catalogName, defaultDatabase, username, pwd, baseUrl, projectId, tenantId);
         } else if (dialect instanceof MySQLDialect) {
-            return new MySqlCatalog(
+            return new MySqlDTCatalog(
                     catalogName, defaultDatabase, username, pwd, baseUrl, projectId, tenantId);
         } else {
             throw new UnsupportedOperationException(

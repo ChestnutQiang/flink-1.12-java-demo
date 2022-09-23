@@ -38,9 +38,9 @@ import static org.apache.flink.table.factories.FactoryUtil.CONNECTOR;
 import static com.dtstack.flinkx.catalog.table.JdbcDynamicTableFactory.*;
 /** Catalog for PostgreSQL. */
 @Internal
-public class PostgresCatalog extends AbstractDTCatalog {
+public class PostgresDTCatalog extends AbstractDTCatalog {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PostgresCatalog.class);
+    private static final Logger LOG = LoggerFactory.getLogger(PostgresDTCatalog.class);
 
     public static final String DEFAULT_DATABASE = "postgres";
 
@@ -65,7 +65,7 @@ public class PostgresCatalog extends AbstractDTCatalog {
                 }
             };
 
-    protected PostgresCatalog(
+    protected PostgresDTCatalog(
             String catalogName,
             String defaultDatabase,
             String username,
