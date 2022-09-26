@@ -9,9 +9,9 @@
     <packaging>pom</packaging>
     <version>1.0</version>
     <modules>
-        <module>flinkx-catalog</module>
         <module>LocalTest</module>
-        <module>DTCatalog-X</module>
+        <module>flinkx-catalog</module>
+        <module>DTCatalog</module>
     </modules>
 
 
