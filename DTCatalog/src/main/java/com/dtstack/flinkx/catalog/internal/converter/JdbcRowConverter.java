@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.dtstack.flinkx.catalog.internal.converter;
+package com.dtstack.flinkx.catalog.jdbc.internal.converter;
 
 import org.apache.flink.table.data.RowData;
 
@@ -44,6 +44,6 @@ public interface JdbcRowConverter extends Serializable {
      * @param statement The statement to be filled.
      * @return The filled statement.
      */
-    com.dtstack.flinkx.catalog.statement.FieldNamedPreparedStatement toExternal(RowData rowData, com.dtstack.flinkx.catalog.statement.FieldNamedPreparedStatement statement)
+    com.dtstack.flinkx.catalog.jdbc.statement.FieldNamedPreparedStatement toExternal(RowData rowData, com.dtstack.flinkx.catalog.jdbc.statement.FieldNamedPreparedStatement statement)
             throws SQLException;
 }

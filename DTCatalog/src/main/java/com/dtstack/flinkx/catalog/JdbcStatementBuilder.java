@@ -17,7 +17,7 @@
 
 package com.dtstack.flinkx.catalog;
 
-import com.dtstack.flinkx.catalog.internal.executor.DTBatchStatementExecutor;
+import com.dtstack.flinkx.catalog.jdbc.internal.executor.DTBatchStatementExecutor;
 import org.apache.flink.annotation.PublicEvolving;
 import org.apache.flink.util.function.BiConsumerWithException;
 

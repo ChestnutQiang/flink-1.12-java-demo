@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.dtstack.flinkx.catalog.catalog;
+package com.dtstack.flinkx.catalog.jdbc.catalog;
 
 
 
@@ -154,7 +154,7 @@ public abstract class AbstractDTCatalog extends AbstractCatalog {
 
     @Override
     public Optional<Factory> getFactory() {
-        return Optional.of(new com.dtstack.flinkx.catalog.table.JdbcDynamicTableFactory());
+        return Optional.of(new com.dtstack.flinkx.catalog.jdbc.table.JdbcDynamicTableFactory());
     }
 
     // ------ databases ------

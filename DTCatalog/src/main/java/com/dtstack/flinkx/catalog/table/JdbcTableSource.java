@@ -16,18 +16,18 @@
  * limitations under the License.
  */
 
-package com.dtstack.flinkx.catalog.table;
+package com.dtstack.flinkx.catalog.jdbc.table;
 
 
 
 import com.dtstack.flinkx.catalog.JdbcInputFormat;
-import com.dtstack.flinkx.catalog.dialect.DTDialect;
-import com.dtstack.flinkx.catalog.internal.options.JdbcLookupOptions;
-import com.dtstack.flinkx.catalog.internal.options.JdbcOptions;
-import com.dtstack.flinkx.catalog.internal.options.JdbcReadOptions;
-import com.dtstack.flinkx.catalog.split.JdbcNumericBetweenParametersProvider;
-import com.dtstack.flinkx.catalog.statement.FieldNamedPreparedStatementImpl;
-import com.dtstack.flinkx.catalog.utils.JdbcTypeUtil;
+import com.dtstack.flinkx.catalog.jdbc.dialect.DTDialect;
+import com.dtstack.flinkx.catalog.jdbc.internal.options.JdbcLookupOptions;
+import com.dtstack.flinkx.catalog.jdbc.internal.options.JdbcOptions;
+import com.dtstack.flinkx.catalog.jdbc.internal.options.JdbcReadOptions;
+import com.dtstack.flinkx.catalog.jdbc.split.JdbcNumericBetweenParametersProvider;
+import com.dtstack.flinkx.catalog.jdbc.statement.FieldNamedPreparedStatementImpl;
+import com.dtstack.flinkx.catalog.jdbc.utils.JdbcTypeUtil;
 import org.apache.flink.api.java.typeutils.RowTypeInfo;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;

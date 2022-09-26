@@ -16,12 +16,12 @@
  * limitations under the License.
  */
 
-package com.dtstack.flinkx.catalog.catalog;
+package com.dtstack.flinkx.catalog.jdbc.catalog;
 
-import com.dtstack.flinkx.catalog.dialect.DTDialect;
-import com.dtstack.flinkx.catalog.dialect.DTDialects;
-import com.dtstack.flinkx.catalog.dialect.MySQLDialect;
-import com.dtstack.flinkx.catalog.dialect.PostgresDialect;
+import com.dtstack.flinkx.catalog.jdbc.dialect.DTDialect;
+import com.dtstack.flinkx.catalog.jdbc.dialect.DTDialects;
+import com.dtstack.flinkx.catalog.jdbc.dialect.MySQLDialect;
+import com.dtstack.flinkx.catalog.jdbc.dialect.PostgresDialect;
 
 import static org.apache.flink.util.Preconditions.checkArgument;
 

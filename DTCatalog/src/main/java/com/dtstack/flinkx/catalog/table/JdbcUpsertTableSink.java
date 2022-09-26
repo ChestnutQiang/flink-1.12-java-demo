@@ -16,15 +16,15 @@
  * limitations under the License.
  */
 
-package com.dtstack.flinkx.catalog.table;
+package com.dtstack.flinkx.catalog.jdbc.table;
 
 import com.dtstack.flinkx.catalog.JdbcExecutionOptions;
-import com.dtstack.flinkx.catalog.internal.AbstractJdbcOutputFormat;
-import com.dtstack.flinkx.catalog.internal.GenericJdbcSinkFunction;
-import com.dtstack.flinkx.catalog.internal.JdbcBatchingOutputFormat;
-import com.dtstack.flinkx.catalog.internal.executor.DTBatchStatementExecutor;
-import com.dtstack.flinkx.catalog.internal.options.JdbcOptions;
-import com.dtstack.flinkx.catalog.utils.JdbcTypeUtil;
+import com.dtstack.flinkx.catalog.jdbc.internal.AbstractJdbcOutputFormat;
+import com.dtstack.flinkx.catalog.jdbc.internal.GenericJdbcSinkFunction;
+import com.dtstack.flinkx.catalog.jdbc.internal.JdbcBatchingOutputFormat;
+import com.dtstack.flinkx.catalog.jdbc.internal.executor.DTBatchStatementExecutor;
+import com.dtstack.flinkx.catalog.jdbc.internal.options.JdbcOptions;
+import com.dtstack.flinkx.catalog.jdbc.utils.JdbcTypeUtil;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeinfo.Types;
 import org.apache.flink.api.java.tuple.Tuple2;

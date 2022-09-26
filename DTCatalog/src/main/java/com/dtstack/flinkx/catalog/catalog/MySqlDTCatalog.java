@@ -16,10 +16,10 @@
  * limitations under the License.
  */
 
-package com.dtstack.flinkx.catalog.catalog;
+package com.dtstack.flinkx.catalog.jdbc.catalog;
 
-import com.dtstack.flinkx.catalog.dialect.DTDialectTypeMapper;
-import com.dtstack.flinkx.catalog.dialect.MySqlTypeMapper;
+import com.dtstack.flinkx.catalog.jdbc.dialect.DTDialectTypeMapper;
+import com.dtstack.flinkx.catalog.jdbc.dialect.MySqlTypeMapper;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.ArrayHandler;
@@ -47,7 +47,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static com.dtstack.flinkx.catalog.table.JdbcConnectorOptions.*;
+import static com.dtstack.flinkx.catalog.jdbc.table.JdbcConnectorOptions.*;
 import static org.apache.flink.table.factories.FactoryUtil.CONNECTOR;
 
 /** Catalog for MySQL. */

@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-package com.dtstack.flinkx.catalog.dialect;
+package com.dtstack.flinkx.catalog.jdbc.dialect;
 
-import com.dtstack.flinkx.catalog.internal.converter.JdbcRowConverter;
+import com.dtstack.flinkx.catalog.jdbc.internal.converter.JdbcRowConverter;
 import org.apache.flink.annotation.Internal;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.api.ValidationException;

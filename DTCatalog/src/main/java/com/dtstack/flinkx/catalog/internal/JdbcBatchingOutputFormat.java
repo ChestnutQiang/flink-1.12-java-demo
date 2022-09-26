@@ -16,17 +16,17 @@
  * limitations under the License.
  */
 
-package com.dtstack.flinkx.catalog.internal;
+package com.dtstack.flinkx.catalog.jdbc.internal;
 
 import com.dtstack.flinkx.catalog.JdbcExecutionOptions;
 import com.dtstack.flinkx.catalog.JdbcStatementBuilder;
-import com.dtstack.flinkx.catalog.internal.connection.JdbcConnectionProvider;
-import com.dtstack.flinkx.catalog.internal.connection.SimpleJdbcConnectionProvider;
-import com.dtstack.flinkx.catalog.internal.executor.DTBatchStatementExecutor;
-import com.dtstack.flinkx.catalog.internal.options.JdbcDmlOptions;
-import com.dtstack.flinkx.catalog.internal.options.JdbcOptions;
-import com.dtstack.flinkx.catalog.statement.FieldNamedPreparedStatementImpl;
-import com.dtstack.flinkx.catalog.utils.JdbcUtils;
+import com.dtstack.flinkx.catalog.jdbc.internal.connection.JdbcConnectionProvider;
+import com.dtstack.flinkx.catalog.jdbc.internal.connection.SimpleJdbcConnectionProvider;
+import com.dtstack.flinkx.catalog.jdbc.internal.executor.DTBatchStatementExecutor;
+import com.dtstack.flinkx.catalog.jdbc.internal.options.JdbcDmlOptions;
+import com.dtstack.flinkx.catalog.jdbc.internal.options.JdbcOptions;
+import com.dtstack.flinkx.catalog.jdbc.statement.FieldNamedPreparedStatementImpl;
+import com.dtstack.flinkx.catalog.jdbc.utils.JdbcUtils;
 import org.apache.flink.annotation.Internal;
 import org.apache.flink.api.common.functions.RuntimeContext;
 import org.apache.flink.api.java.tuple.Tuple2;
@@ -47,8 +47,8 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
-import static com.dtstack.flinkx.catalog.internal.options.JdbcOptions.CONNECTION_CHECK_TIMEOUT_SECONDS;
-import static com.dtstack.flinkx.catalog.utils.JdbcUtils.setRecordToStatement;
+import static com.dtstack.flinkx.catalog.jdbc.internal.options.JdbcOptions.CONNECTION_CHECK_TIMEOUT_SECONDS;
+import static com.dtstack.flinkx.catalog.jdbc.utils.JdbcUtils.setRecordToStatement;
 import static org.apache.flink.util.Preconditions.checkNotNull;
 
 /** A JDBC outputFormat that supports batching records before writing records to database. */

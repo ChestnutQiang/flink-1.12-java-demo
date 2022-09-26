@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.dtstack.flinkx.catalog.internal.executor;
+package com.dtstack.flinkx.catalog.jdbc.internal.executor;
 
 import com.dtstack.flinkx.catalog.JdbcStatementBuilder;
 import org.apache.flink.annotation.Internal;

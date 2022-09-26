@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.dtstack.flinkx.catalog.utils;
+package com.dtstack.flinkx.catalog.jdbc.utils;
 
 import org.apache.commons.compress.utils.Lists;
 import org.apache.flink.table.catalog.exceptions.CatalogException;

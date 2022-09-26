@@ -18,10 +18,10 @@
 
 package com.dtstack.flinkx.catalog;
 
-import com.dtstack.flinkx.catalog.internal.JdbcBatchingOutputFormat;
-import com.dtstack.flinkx.catalog.internal.connection.JdbcConnectionProvider;
-import com.dtstack.flinkx.catalog.internal.connection.SimpleJdbcConnectionProvider;
-import com.dtstack.flinkx.catalog.internal.executor.DTBatchStatementExecutor;
+import com.dtstack.flinkx.catalog.jdbc.internal.JdbcBatchingOutputFormat;
+import com.dtstack.flinkx.catalog.jdbc.internal.connection.JdbcConnectionProvider;
+import com.dtstack.flinkx.catalog.jdbc.internal.connection.SimpleJdbcConnectionProvider;
+import com.dtstack.flinkx.catalog.jdbc.internal.executor.DTBatchStatementExecutor;
 import org.apache.flink.annotation.Experimental;
 import org.apache.flink.api.common.functions.RuntimeContext;
 import org.apache.flink.types.Row;
@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.function.Function;
 
-import static com.dtstack.flinkx.catalog.utils.JdbcUtils.setRecordToStatement;
+import static com.dtstack.flinkx.catalog.jdbc.utils.JdbcUtils.setRecordToStatement;
 
 /**
  * OutputFormat to write Rows into a JDBC database. The OutputFormat has to be configured using the

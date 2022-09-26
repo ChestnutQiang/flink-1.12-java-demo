@@ -16,11 +16,11 @@
  * limitations under the License.
  */
 
-package com.dtstack.flinkx.catalog.table;
+package com.dtstack.flinkx.catalog.jdbc.table;
 
 import com.dtstack.flinkx.catalog.JdbcExecutionOptions;
-import com.dtstack.flinkx.catalog.internal.options.JdbcDmlOptions;
-import com.dtstack.flinkx.catalog.internal.options.JdbcOptions;
+import com.dtstack.flinkx.catalog.jdbc.internal.options.JdbcDmlOptions;
+import com.dtstack.flinkx.catalog.jdbc.internal.options.JdbcOptions;
 import org.apache.flink.annotation.Internal;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.table.api.TableSchema;

@@ -1,4 +1,4 @@
-package com.dtstack.flinkx.catalog.catalog;
+package com.dtstack.flinkx.catalog.jdbc.catalog;
 
 import org.apache.flink.configuration.PipelineOptions;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;

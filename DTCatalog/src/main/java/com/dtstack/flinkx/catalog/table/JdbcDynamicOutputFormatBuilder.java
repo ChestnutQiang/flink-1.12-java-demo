@@ -16,17 +16,17 @@
  * limitations under the License.
  */
 
-package com.dtstack.flinkx.catalog.table;
+package com.dtstack.flinkx.catalog.jdbc.table;
 
 import com.dtstack.flinkx.catalog.JdbcExecutionOptions;
-import com.dtstack.flinkx.catalog.internal.executor.*;
-import com.dtstack.flinkx.catalog.dialect.DTDialect;
-import com.dtstack.flinkx.catalog.internal.JdbcBatchingOutputFormat;
-import com.dtstack.flinkx.catalog.internal.connection.SimpleJdbcConnectionProvider;
-import com.dtstack.flinkx.catalog.internal.converter.JdbcRowConverter;
-import com.dtstack.flinkx.catalog.internal.options.JdbcDmlOptions;
-import com.dtstack.flinkx.catalog.internal.options.JdbcOptions;
-import com.dtstack.flinkx.catalog.statement.FieldNamedPreparedStatement;
+import com.dtstack.flinkx.catalog.jdbc.internal.executor.*;
+import com.dtstack.flinkx.catalog.jdbc.dialect.DTDialect;
+import com.dtstack.flinkx.catalog.jdbc.internal.JdbcBatchingOutputFormat;
+import com.dtstack.flinkx.catalog.jdbc.internal.connection.SimpleJdbcConnectionProvider;
+import com.dtstack.flinkx.catalog.jdbc.internal.converter.JdbcRowConverter;
+import com.dtstack.flinkx.catalog.jdbc.internal.options.JdbcDmlOptions;
+import com.dtstack.flinkx.catalog.jdbc.internal.options.JdbcOptions;
+import com.dtstack.flinkx.catalog.jdbc.statement.FieldNamedPreparedStatement;
 import org.apache.flink.api.common.functions.RuntimeContext;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.common.typeutils.TypeSerializer;

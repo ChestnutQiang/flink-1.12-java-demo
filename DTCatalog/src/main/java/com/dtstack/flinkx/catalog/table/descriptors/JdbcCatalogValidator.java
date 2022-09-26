@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-package com.dtstack.flinkx.catalog.table.descriptors;
+package com.dtstack.flinkx.catalog.jdbc.table.descriptors;
 
-import com.dtstack.flinkx.catalog.catalog.DTCatalog;
+import com.dtstack.flinkx.catalog.jdbc.catalog.DTCatalog;
 import org.apache.flink.table.descriptors.CatalogDescriptorValidator;
 import org.apache.flink.table.descriptors.DescriptorProperties;
 

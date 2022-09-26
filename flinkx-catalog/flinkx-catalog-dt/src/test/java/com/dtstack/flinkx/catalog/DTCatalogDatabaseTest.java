@@ -1,14 +1,12 @@
 package com.dtstack.flinkx.catalog;
 
-import com.dtstack.flinkx.catalog.catalog.DTCatalog;
+import com.dtstack.flinkx.catalog.dt.catalog.DTCatalog;
 import org.apache.flink.configuration.PipelineOptions;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.table.api.EnvironmentSettings;
 import org.apache.flink.table.api.StatementSet;
-import org.apache.flink.table.api.TableResult;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 import org.apache.flink.table.catalog.Catalog;
-import org.apache.flink.table.catalog.exceptions.DatabaseNotExistException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -16,7 +14,6 @@ import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
 import java.util.Optional;
 
 /**

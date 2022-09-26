@@ -16,14 +16,14 @@
  * limitations under the License.
  */
 
-package com.dtstack.flinkx.catalog.table;
+package com.dtstack.flinkx.catalog.jdbc.table;
 
-import com.dtstack.flinkx.catalog.dialect.DTDialect;
-import com.dtstack.flinkx.catalog.dialect.DTDialects;
-import com.dtstack.flinkx.catalog.internal.converter.JdbcRowConverter;
-import com.dtstack.flinkx.catalog.internal.options.JdbcLookupOptions;
-import com.dtstack.flinkx.catalog.internal.options.JdbcOptions;
-import com.dtstack.flinkx.catalog.statement.FieldNamedPreparedStatement;
+import com.dtstack.flinkx.catalog.jdbc.dialect.DTDialect;
+import com.dtstack.flinkx.catalog.jdbc.dialect.DTDialects;
+import com.dtstack.flinkx.catalog.jdbc.internal.converter.JdbcRowConverter;
+import com.dtstack.flinkx.catalog.jdbc.internal.options.JdbcLookupOptions;
+import com.dtstack.flinkx.catalog.jdbc.internal.options.JdbcOptions;
+import com.dtstack.flinkx.catalog.jdbc.statement.FieldNamedPreparedStatement;
 import org.apache.flink.annotation.Internal;
 import org.apache.flink.annotation.VisibleForTesting;
 import org.apache.flink.shaded.guava18.com.google.common.cache.Cache;
@@ -48,7 +48,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static com.dtstack.flinkx.catalog.internal.options.JdbcOptions.CONNECTION_CHECK_TIMEOUT_SECONDS;
+import static com.dtstack.flinkx.catalog.jdbc.internal.options.JdbcOptions.CONNECTION_CHECK_TIMEOUT_SECONDS;
 import static org.apache.flink.util.Preconditions.checkArgument;
 import static org.apache.flink.util.Preconditions.checkNotNull;
 

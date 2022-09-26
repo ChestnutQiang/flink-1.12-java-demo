@@ -1,4 +1,4 @@
-package com.dtstack.flinkx.catalog.catalog;
+package com.dtstack.flinkx.catalog.jdbc.catalog;
 
 @FunctionalInterface
 public interface ThrowingRunnable<E extends Exception> {

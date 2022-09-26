@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-package com.dtstack.flinkx.catalog.internal;
+package com.dtstack.flinkx.catalog.jdbc.internal;
 
-import com.dtstack.flinkx.catalog.internal.connection.JdbcConnectionProvider;
+import com.dtstack.flinkx.catalog.jdbc.internal.connection.JdbcConnectionProvider;
 import org.apache.flink.annotation.VisibleForTesting;
 import org.apache.flink.api.common.io.RichOutputFormat;
 import org.apache.flink.configuration.Configuration;

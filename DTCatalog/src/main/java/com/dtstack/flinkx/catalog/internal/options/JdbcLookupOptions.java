@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.dtstack.flinkx.catalog.internal.options;
+package com.dtstack.flinkx.catalog.jdbc.internal.options;
 
 import com.dtstack.flinkx.catalog.JdbcExecutionOptions;
 

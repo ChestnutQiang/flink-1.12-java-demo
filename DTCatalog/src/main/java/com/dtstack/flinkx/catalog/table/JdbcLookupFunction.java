@@ -16,13 +16,13 @@
  * limitations under the License.
  */
 
-package com.dtstack.flinkx.catalog.table;
+package com.dtstack.flinkx.catalog.jdbc.table;
 
-import com.dtstack.flinkx.catalog.internal.options.JdbcLookupOptions;
-import com.dtstack.flinkx.catalog.internal.options.JdbcOptions;
-import com.dtstack.flinkx.catalog.statement.FieldNamedPreparedStatementImpl;
-import com.dtstack.flinkx.catalog.utils.JdbcTypeUtil;
-import com.dtstack.flinkx.catalog.utils.JdbcUtils;
+import com.dtstack.flinkx.catalog.jdbc.internal.options.JdbcLookupOptions;
+import com.dtstack.flinkx.catalog.jdbc.internal.options.JdbcOptions;
+import com.dtstack.flinkx.catalog.jdbc.statement.FieldNamedPreparedStatementImpl;
+import com.dtstack.flinkx.catalog.jdbc.utils.JdbcTypeUtil;
+import com.dtstack.flinkx.catalog.jdbc.utils.JdbcUtils;
 import org.apache.flink.annotation.VisibleForTesting;
 import org.apache.flink.api.common.typeinfo.TypeInformation;
 import org.apache.flink.api.java.typeutils.RowTypeInfo;
@@ -42,8 +42,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import static com.dtstack.flinkx.catalog.internal.options.JdbcOptions.CONNECTION_CHECK_TIMEOUT_SECONDS;
-import static com.dtstack.flinkx.catalog.utils.JdbcUtils.getFieldFromResultSet;
+import static com.dtstack.flinkx.catalog.jdbc.internal.options.JdbcOptions.CONNECTION_CHECK_TIMEOUT_SECONDS;
+import static com.dtstack.flinkx.catalog.jdbc.utils.JdbcUtils.getFieldFromResultSet;
 import static org.apache.flink.util.Preconditions.checkArgument;
 import static org.apache.flink.util.Preconditions.checkNotNull;
 

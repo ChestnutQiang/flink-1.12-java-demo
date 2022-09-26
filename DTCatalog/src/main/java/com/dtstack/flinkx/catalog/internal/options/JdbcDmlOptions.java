@@ -15,9 +15,9 @@
  * limitations under the License.
  */
 
-package com.dtstack.flinkx.catalog.internal.options;
+package com.dtstack.flinkx.catalog.jdbc.internal.options;
 
-import com.dtstack.flinkx.catalog.dialect.DTDialect;
+import com.dtstack.flinkx.catalog.jdbc.dialect.DTDialect;
 import org.apache.flink.util.Preconditions;
 
 import javax.annotation.Nullable;

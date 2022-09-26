@@ -15,10 +15,10 @@
  * limitations under the License.
  */
 
-package com.dtstack.flinkx.catalog.internal.executor;
+package com.dtstack.flinkx.catalog.jdbc.internal.executor;
 
 import com.dtstack.flinkx.catalog.JdbcStatementBuilder;
-import com.dtstack.flinkx.catalog.table.JdbcUpsertTableSink;
+import com.dtstack.flinkx.catalog.jdbc.table.JdbcUpsertTableSink;
 import org.apache.flink.annotation.Internal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

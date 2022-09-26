@@ -16,10 +16,10 @@
  * limitations under the License.
  */
 
-package com.dtstack.flinkx.catalog.catalog.factory;
+package com.dtstack.flinkx.catalog.jdbc.catalog.factory;
 
-import com.dtstack.flinkx.catalog.catalog.DTCatalog;
-import com.dtstack.flinkx.catalog.table.descriptors.DTCatalogValidator;
+import com.dtstack.flinkx.catalog.jdbc.catalog.DTCatalog;
+import com.dtstack.flinkx.catalog.jdbc.table.descriptors.DTCatalogValidator;
 import org.apache.flink.table.catalog.Catalog;
 import org.apache.flink.table.descriptors.DescriptorProperties;
 import org.apache.flink.table.factories.CatalogFactory;
@@ -31,7 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.dtstack.flinkx.catalog.table.descriptors.DTCatalogValidator.*;
+import static com.dtstack.flinkx.catalog.jdbc.table.descriptors.DTCatalogValidator.*;
 
 
 /** Factory for {@link DTCatalog}. */

@@ -16,10 +16,10 @@
  * limitations under the License.
  */
 
-package com.dtstack.flinkx.catalog.table.descriptors;
+package com.dtstack.flinkx.catalog.jdbc.table.descriptors;
 
-import com.dtstack.flinkx.catalog.dialect.DTDialect;
-import com.dtstack.flinkx.catalog.dialect.DTDialects;
+import com.dtstack.flinkx.catalog.jdbc.dialect.DTDialect;
+import com.dtstack.flinkx.catalog.jdbc.dialect.DTDialects;
 import org.apache.flink.annotation.Internal;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.descriptors.ConnectorDescriptorValidator;

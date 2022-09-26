@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.dtstack.flinkx.catalog.catalog;
+package com.dtstack.flinkx.catalog.jdbc.catalog;
 
 import org.apache.flink.annotation.Internal;
 import org.apache.flink.table.api.DataTypes;
@@ -35,7 +35,7 @@ import java.sql.*;
 import java.util.*;
 
 import static org.apache.flink.table.factories.FactoryUtil.CONNECTOR;
-import static com.dtstack.flinkx.catalog.table.JdbcDynamicTableFactory.*;
+import static com.dtstack.flinkx.catalog.jdbc.table.JdbcDynamicTableFactory.*;
 /** Catalog for PostgreSQL. */
 @Internal
 public class PostgresDTCatalog extends AbstractDTCatalog {

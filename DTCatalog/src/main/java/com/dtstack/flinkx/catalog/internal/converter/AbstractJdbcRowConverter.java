@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.dtstack.flinkx.catalog.internal.converter;
+package com.dtstack.flinkx.catalog.jdbc.internal.converter;
 
 
 import org.apache.flink.table.data.*;
@@ -67,8 +67,8 @@ public abstract class AbstractJdbcRowConverter implements JdbcRowConverter {
     }
 
     @Override
-    public com.dtstack.flinkx.catalog.statement.FieldNamedPreparedStatement toExternal(
-            RowData rowData, com.dtstack.flinkx.catalog.statement.FieldNamedPreparedStatement statement) throws SQLException {
+    public com.dtstack.flinkx.catalog.jdbc.statement.FieldNamedPreparedStatement toExternal(
+            RowData rowData, com.dtstack.flinkx.catalog.jdbc.statement.FieldNamedPreparedStatement statement) throws SQLException {
         for (int index = 0; index < rowData.getArity(); index++) {
             toExternalConverters[index].serialize(rowData, index, statement);
         }
@@ -92,7 +92,7 @@ public abstract class AbstractJdbcRowConverter implements JdbcRowConverter {
      */
     @FunctionalInterface
     interface JdbcSerializationConverter extends Serializable {
-        void serialize(RowData rowData, int index, com.dtstack.flinkx.catalog.statement.FieldNamedPreparedStatement statement)
+        void serialize(RowData rowData, int index, com.dtstack.flinkx.catalog.jdbc.statement.FieldNamedPreparedStatement statement)
                 throws SQLException;
     }
 
@@ -178,7 +178,7 @@ public abstract class AbstractJdbcRowConverter implements JdbcRowConverter {
     protected JdbcSerializationConverter wrapIntoNullableExternalConverter(
             JdbcSerializationConverter jdbcSerializationConverter, LogicalType type) {
         final int sqlType =
-                com.dtstack.flinkx.catalog.utils.JdbcTypeUtil.typeInformationToSqlType(
+                com.dtstack.flinkx.catalog.jdbc.utils.JdbcTypeUtil.typeInformationToSqlType(
                         TypeConversions.fromDataTypeToLegacyInfo(
                                 TypeConversions.fromLogicalToDataType(type)));
         return (val, index, statement) -> {

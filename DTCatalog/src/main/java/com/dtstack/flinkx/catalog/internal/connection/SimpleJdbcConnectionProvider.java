@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.dtstack.flinkx.catalog.internal.connection;
+package com.dtstack.flinkx.catalog.jdbc.internal.connection;
 
 import com.dtstack.flinkx.catalog.JdbcConnectionOptions;
 import org.slf4j.Logger;

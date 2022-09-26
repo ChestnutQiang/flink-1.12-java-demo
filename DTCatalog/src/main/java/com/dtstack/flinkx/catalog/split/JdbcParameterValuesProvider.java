@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.dtstack.flinkx.catalog.split;
+package com.dtstack.flinkx.catalog.jdbc.split;
 
 
 import org.apache.flink.annotation.Experimental;

@@ -18,7 +18,7 @@
 
 package com.dtstack.flinkx.catalog;
 
-import com.dtstack.flinkx.catalog.split.JdbcParameterValuesProvider;
+import com.dtstack.flinkx.catalog.jdbc.split.JdbcParameterValuesProvider;
 import org.apache.flink.annotation.Experimental;
 import org.apache.flink.annotation.VisibleForTesting;
 import org.apache.flink.api.common.io.DefaultInputSplitAssigner;

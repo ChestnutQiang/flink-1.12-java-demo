@@ -16,9 +16,9 @@
  * limitations under the License.
  */
 
-package com.dtstack.flinkx.catalog.catalog;
+package com.dtstack.flinkx.catalog.jdbc.catalog;
 
-import com.dtstack.flinkx.catalog.table.DTDynamicTableFactory;
+import com.dtstack.flinkx.catalog.jdbc.table.DTDynamicTableFactory;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.flink.annotation.PublicEvolving;
 import org.apache.flink.annotation.VisibleForTesting;

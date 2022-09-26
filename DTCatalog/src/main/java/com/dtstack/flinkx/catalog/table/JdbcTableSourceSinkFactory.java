@@ -16,13 +16,13 @@
  * limitations under the License.
  */
 
-package com.dtstack.flinkx.catalog.table;
+package com.dtstack.flinkx.catalog.jdbc.table;
 
-import com.dtstack.flinkx.catalog.dialect.DTDialects;
-import com.dtstack.flinkx.catalog.internal.options.JdbcLookupOptions;
-import com.dtstack.flinkx.catalog.internal.options.JdbcOptions;
-import com.dtstack.flinkx.catalog.internal.options.JdbcReadOptions;
-import com.dtstack.flinkx.catalog.table.descriptors.JdbcValidator;
+import com.dtstack.flinkx.catalog.jdbc.dialect.DTDialects;
+import com.dtstack.flinkx.catalog.jdbc.internal.options.JdbcLookupOptions;
+import com.dtstack.flinkx.catalog.jdbc.internal.options.JdbcOptions;
+import com.dtstack.flinkx.catalog.jdbc.internal.options.JdbcReadOptions;
+import com.dtstack.flinkx.catalog.jdbc.table.descriptors.JdbcValidator;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.descriptors.DescriptorProperties;
@@ -36,7 +36,7 @@ import org.apache.flink.types.Row;
 
 import java.util.*;
 
-import static com.dtstack.flinkx.catalog.table.descriptors.JdbcValidator.*;
+import static com.dtstack.flinkx.catalog.jdbc.table.descriptors.JdbcValidator.*;
 import static org.apache.flink.table.descriptors.ConnectorDescriptorValidator.CONNECTOR_PROPERTY_VERSION;
 import static org.apache.flink.table.descriptors.ConnectorDescriptorValidator.CONNECTOR_TYPE;
 import static org.apache.flink.table.descriptors.DescriptorProperties.*;

@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.dtstack.flinkx.catalog.split;
+package com.dtstack.flinkx.catalog.jdbc.split;
 
 import org.apache.flink.annotation.Experimental;
 
@@ -27,7 +27,7 @@ import java.io.Serializable;
  * user before creating the {@link JdbcInputFormat} instance.
  */
 @Experimental
-public class JdbcGenericParameterValuesProvider implements com.dtstack.flinkx.catalog.split.JdbcParameterValuesProvider {
+public class JdbcGenericParameterValuesProvider implements com.dtstack.flinkx.catalog.jdbc.split.JdbcParameterValuesProvider {
 
     private final Serializable[][] parameters;
 

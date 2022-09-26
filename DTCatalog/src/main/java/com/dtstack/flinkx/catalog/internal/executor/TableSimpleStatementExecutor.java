@@ -16,11 +16,11 @@
  * limitations under the License.
  */
 
-package com.dtstack.flinkx.catalog.internal.executor;
+package com.dtstack.flinkx.catalog.jdbc.internal.executor;
 
-import com.dtstack.flinkx.catalog.internal.converter.JdbcRowConverter;
-import com.dtstack.flinkx.catalog.statement.FieldNamedPreparedStatement;
-import com.dtstack.flinkx.catalog.statement.StatementFactory;
+import com.dtstack.flinkx.catalog.jdbc.internal.converter.JdbcRowConverter;
+import com.dtstack.flinkx.catalog.jdbc.statement.FieldNamedPreparedStatement;
+import com.dtstack.flinkx.catalog.jdbc.statement.StatementFactory;
 import org.apache.flink.table.data.RowData;
 
 import java.sql.Connection;

@@ -16,16 +16,16 @@
  * limitations under the License.
  */
 
-package com.dtstack.flinkx.catalog.table.descriptors;
+package com.dtstack.flinkx.catalog.jdbc.table.descriptors;
 
-import com.dtstack.flinkx.catalog.catalog.DTCatalog;
+import com.dtstack.flinkx.catalog.jdbc.catalog.DTCatalog;
 import org.apache.flink.table.descriptors.CatalogDescriptor;
 import org.apache.flink.table.descriptors.DescriptorProperties;
 import org.apache.flink.util.StringUtils;
 
 import java.util.Map;
 
-import static com.dtstack.flinkx.catalog.table.descriptors.DTCatalogValidator.*;
+import static com.dtstack.flinkx.catalog.jdbc.table.descriptors.DTCatalogValidator.*;
 import static org.apache.flink.table.descriptors.CatalogDescriptorValidator.CATALOG_DEFAULT_DATABASE;
 import static org.apache.flink.util.Preconditions.checkArgument;
 

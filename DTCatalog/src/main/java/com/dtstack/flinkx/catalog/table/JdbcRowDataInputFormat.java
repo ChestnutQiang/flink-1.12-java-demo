@@ -16,14 +16,14 @@
  * limitations under the License.
  */
 
-package com.dtstack.flinkx.catalog.table;
+package com.dtstack.flinkx.catalog.jdbc.table;
 
 
 
 import com.dtstack.flinkx.catalog.JdbcConnectionOptions;
-import com.dtstack.flinkx.catalog.internal.connection.SimpleJdbcConnectionProvider;
-import com.dtstack.flinkx.catalog.internal.converter.JdbcRowConverter;
-import com.dtstack.flinkx.catalog.split.JdbcParameterValuesProvider;
+import com.dtstack.flinkx.catalog.jdbc.internal.connection.SimpleJdbcConnectionProvider;
+import com.dtstack.flinkx.catalog.jdbc.internal.converter.JdbcRowConverter;
+import com.dtstack.flinkx.catalog.jdbc.split.JdbcParameterValuesProvider;
 import org.apache.flink.annotation.Internal;
 import org.apache.flink.api.common.io.DefaultInputSplitAssigner;
 import org.apache.flink.api.common.io.InputFormat;

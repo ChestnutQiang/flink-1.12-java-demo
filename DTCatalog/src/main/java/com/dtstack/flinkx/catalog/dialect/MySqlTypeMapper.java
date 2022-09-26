@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.dtstack.flinkx.catalog.dialect;
+package com.dtstack.flinkx.catalog.jdbc.dialect;
 
 import org.apache.flink.annotation.Internal;
 import org.apache.flink.table.api.DataTypes;
@@ -117,8 +117,8 @@ public class MySqlTypeMapper implements DTDialectTypeMapper {
                 // BINARY is not supported in MySqlDialect now.
                 // VARBINARY(n) is not supported in MySqlDialect when 'n' is not equals to
                 // Integer.MAX_VALUE. Please see
-                // com.dtstack.flinkx.catalog.dialect.mysql.MySqlDialect#supportedTypes and
-                // com.dtstack.flinkx.catalog.dialect.AbstractDialect#validate for more
+                // com.dtstack.flinkx.catalog.jdbc.dialect.mysql.MySqlDialect#supportedTypes and
+                // com.dtstack.flinkx.catalog.jdbc.dialect.AbstractDialect#validate for more
                 // details.
                 return DataTypes.BYTES();
             case MYSQL_TINYINT:

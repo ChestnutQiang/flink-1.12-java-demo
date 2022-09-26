@@ -13,5 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-com.dtstack.flinkx.catalog.catalog.factory.DTCatalogFactory
-com.dtstack.flinkx.catalog.table.JdbcTableSourceSinkFactory
+com.dtstack.flinkx.catalog.dt.catalog.factory.DTCatalogFactory

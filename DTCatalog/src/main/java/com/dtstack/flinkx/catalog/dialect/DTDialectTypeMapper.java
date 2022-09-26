@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package com.dtstack.flinkx.catalog.dialect;
+package com.dtstack.flinkx.catalog.jdbc.dialect;
 
 import org.apache.flink.table.catalog.ObjectPath;
 import org.apache.flink.table.types.DataType;

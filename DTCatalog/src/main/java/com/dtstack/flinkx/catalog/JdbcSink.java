@@ -18,10 +18,10 @@
 package com.dtstack.flinkx.catalog;
 
 
-import com.dtstack.flinkx.catalog.internal.GenericJdbcSinkFunction;
-import com.dtstack.flinkx.catalog.internal.JdbcBatchingOutputFormat;
-import com.dtstack.flinkx.catalog.internal.connection.SimpleJdbcConnectionProvider;
-import com.dtstack.flinkx.catalog.internal.executor.DTBatchStatementExecutor;
+import com.dtstack.flinkx.catalog.jdbc.internal.GenericJdbcSinkFunction;
+import com.dtstack.flinkx.catalog.jdbc.internal.JdbcBatchingOutputFormat;
+import com.dtstack.flinkx.catalog.jdbc.internal.connection.SimpleJdbcConnectionProvider;
+import com.dtstack.flinkx.catalog.jdbc.internal.executor.DTBatchStatementExecutor;
 import org.apache.flink.annotation.PublicEvolving;
 import org.apache.flink.streaming.api.functions.sink.SinkFunction;
 import org.apache.flink.util.Preconditions;
