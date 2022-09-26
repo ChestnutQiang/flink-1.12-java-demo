@@ -19,7 +19,7 @@
 package com.dtstack.flinkx.catalog.catalog.factory;
 
 import com.dtstack.flinkx.catalog.catalog.DTCatalog;
-import com.dtstack.flinkx.catalog.table.descriptors.JdbcCatalogValidator;
+import com.dtstack.flinkx.catalog.table.descriptors.DTCatalogValidator;
 import org.apache.flink.table.catalog.Catalog;
 import org.apache.flink.table.descriptors.DescriptorProperties;
 import org.apache.flink.table.factories.CatalogFactory;
@@ -31,7 +31,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.dtstack.flinkx.catalog.table.descriptors.JdbcCatalogValidator.*;
+import static com.dtstack.flinkx.catalog.table.descriptors.DTCatalogValidator.*;
+
 
 /** Factory for {@link DTCatalog}. */
 public class DTCatalogFactory implements CatalogFactory {
@@ -87,7 +88,7 @@ public class DTCatalogFactory implements CatalogFactory {
     private static DescriptorProperties getValidatedProperties(Map<String, String> properties) {
         final DescriptorProperties descriptorProperties = new DescriptorProperties(true);
         descriptorProperties.putProperties(properties);
-        new JdbcCatalogValidator().validate(descriptorProperties);
+        new DTCatalogValidator().validate(descriptorProperties);
 
         return descriptorProperties;
     }

@@ -18,17 +18,25 @@
 
 package com.dtstack.flinkx.catalog.catalog;
 
+import com.dtstack.flinkx.catalog.table.DTDynamicTableFactory;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.flink.annotation.PublicEvolving;
 import org.apache.flink.annotation.VisibleForTesting;
+import org.apache.flink.table.api.ValidationException;
 import org.apache.flink.table.catalog.CatalogBaseTable;
 import org.apache.flink.table.catalog.CatalogDatabase;
 import org.apache.flink.table.catalog.ObjectPath;
 import org.apache.flink.table.catalog.exceptions.*;
+import org.apache.flink.table.factories.DataGenTableSourceFactory;
+import org.apache.flink.table.factories.Factory;
+import org.apache.flink.table.factories.FactoryUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Optional;
+
+import static org.apache.flink.table.factories.FactoryUtil.CONNECTOR;
 
 /** Catalogs for relational databases via JDBC. */
 @PublicEvolving
@@ -144,5 +152,10 @@ public class DTCatalog extends AbstractDTCatalog {
     @VisibleForTesting
     public AbstractDTCatalog getInternal() {
         return internal;
+    }
+
+    @Override
+    public Optional<Factory> getFactory() {
+        return Optional.of(new DTDynamicTableFactory());
     }
 }

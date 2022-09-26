@@ -23,21 +23,27 @@ import org.apache.flink.table.descriptors.CatalogDescriptorValidator;
 import org.apache.flink.table.descriptors.DescriptorProperties;
 
 /** Validator for {@link DTCatalog}. */
-public class JdbcCatalogValidator extends CatalogDescriptorValidator {
+public class DTCatalogValidator extends CatalogDescriptorValidator {
 
-    public static final String CATALOG_TYPE_VALUE_JDBC = "jdbc";
+    public static final String CATALOG_TYPE_VALUE_DT = "DT";
 
     public static final String CATALOG_JDBC_USERNAME = "username";
     public static final String CATALOG_JDBC_PASSWORD = "password";
     public static final String CATALOG_JDBC_BASE_URL = "base-url";
+    public static final String CATALOG_JDBC_PROJECT_ID = "project-id";
+    public static final String CATALOG_JDBC_BASE_TENANT_ID = "tenant-id";
+
+
 
     @Override
     public void validate(DescriptorProperties properties) {
         super.validate(properties);
-        properties.validateValue(CATALOG_TYPE, CATALOG_TYPE_VALUE_JDBC, false);
+        properties.validateValue(CATALOG_TYPE, CATALOG_TYPE_VALUE_DT, false);
         properties.validateString(CATALOG_JDBC_BASE_URL, false, 1);
         properties.validateString(CATALOG_JDBC_USERNAME, false, 1);
         properties.validateString(CATALOG_JDBC_PASSWORD, false, 1);
         properties.validateString(CATALOG_DEFAULT_DATABASE, false, 1);
+        properties.validateString(CATALOG_JDBC_PROJECT_ID, true, 1);
+        properties.validateString(CATALOG_JDBC_BASE_TENANT_ID, true, 1);
     }
 }

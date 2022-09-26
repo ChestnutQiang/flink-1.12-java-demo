@@ -51,9 +51,7 @@ public abstract class AbstractDTCatalog extends AbstractCatalog {
     protected final String pwd;
     protected final String baseUrl;
     protected final String defaultUrl;
-
     protected final String projectId;
-
     protected final String tenantId;
 
     protected Connection connection;
@@ -75,14 +73,12 @@ public abstract class AbstractDTCatalog extends AbstractCatalog {
         checkArgument(!StringUtils.isNullOrWhitespaceOnly(projectId));
         checkArgument(!StringUtils.isNullOrWhitespaceOnly(tenantId));
 
-
-
         DTCatalogUtils.validateJdbcUrl(baseUrl);
 
         this.username = username;
         this.pwd = pwd;
         this.baseUrl = baseUrl.endsWith("/") ? baseUrl : baseUrl + "/";
-        this.defaultUrl = baseUrl + defaultDatabase;
+        this.defaultUrl = this.baseUrl + defaultDatabase + "?autoReconnect=true&failOverReadOnly=false";
         this.projectId = projectId;
         this.tenantId = tenantId;
     }

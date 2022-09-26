@@ -25,7 +25,7 @@ import org.apache.flink.util.StringUtils;
 
 import java.util.Map;
 
-import static com.dtstack.flinkx.catalog.table.descriptors.JdbcCatalogValidator.*;
+import static com.dtstack.flinkx.catalog.table.descriptors.DTCatalogValidator.*;
 import static org.apache.flink.table.descriptors.CatalogDescriptorValidator.CATALOG_DEFAULT_DATABASE;
 import static org.apache.flink.util.Preconditions.checkArgument;
 
