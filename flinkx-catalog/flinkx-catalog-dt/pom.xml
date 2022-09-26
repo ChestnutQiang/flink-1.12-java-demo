@@ -34,7 +34,6 @@
             <version>${flink.version}</version>
         </dependency>
 
-
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-runtime_${scala.binary.version}</artifactId>
@@ -179,6 +178,12 @@
             <artifactId>system-rules</artifactId>
             <version>1.19.0</version>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.lzq</groupId>
+            <artifactId>flinkx-catalog-jdbc</artifactId>
+            <version>1.0</version>
         </dependency>
     </dependencies>
 </project>

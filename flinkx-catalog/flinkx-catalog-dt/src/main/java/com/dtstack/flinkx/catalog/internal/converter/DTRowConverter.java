@@ -18,6 +18,7 @@
 
 package com.dtstack.flinkx.catalog.internal.converter;
 
+import com.dtstack.flinkx.catalog.statement.FieldNamedPreparedStatement;
 import org.apache.flink.table.data.RowData;
 
 import java.io.Serializable;
@@ -28,7 +29,7 @@ import java.sql.SQLException;
  * Converter that is responsible to convert between JDBC object and Flink SQL internal data
  * structure {@link RowData}.
  */
-public interface JdbcRowConverter extends Serializable {
+public interface DTRowConverter extends Serializable {
 
     /**
      * Convert data retrieved from {@link ResultSet} to internal {@link RowData}.
@@ -44,6 +45,6 @@ public interface JdbcRowConverter extends Serializable {
      * @param statement The statement to be filled.
      * @return The filled statement.
      */
-    com.dtstack.flinkx.catalog.statement.FieldNamedPreparedStatement toExternal(RowData rowData, com.dtstack.flinkx.catalog.statement.FieldNamedPreparedStatement statement)
+    FieldNamedPreparedStatement toExternal(RowData rowData, FieldNamedPreparedStatement statement)
             throws SQLException;
 }

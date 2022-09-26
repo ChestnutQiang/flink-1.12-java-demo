@@ -54,7 +54,8 @@ public class DTCatalogFactory implements CatalogFactory {
         // default database
         properties.add(CATALOG_DEFAULT_DATABASE);
 
-        properties.add(CATALOG_JDBC_BASE_URL);
+        properties.add(CATALOG_JDBC_DRIVER);
+        properties.add(CATALOG_JDBC_URL);
         properties.add(CATALOG_JDBC_USERNAME);
         properties.add(CATALOG_JDBC_PASSWORD);
         properties.add(CATALOG_JDBC_PROJECT_ID);
@@ -73,13 +74,20 @@ public class DTCatalogFactory implements CatalogFactory {
         if (properties.get(CATALOG_JDBC_BASE_TENANT_ID) == null) {
             map.put(CATALOG_JDBC_BASE_TENANT_ID, "1");
         }
+        if (properties.get(CATALOG_JDBC_DRIVER) == null) {
+            //MySQL 8.0 以下版本 - JDBC 驱动名及数据库 URL
+            map.put(CATALOG_JDBC_DRIVER, "com.mysql.jdbc.Driver");
+            //MySQL 8.0 以上版本 - JDBC 驱动名及数据库 URL
+            //map.put(CATALOG_JDBC_DRIVER, "com.mysql.cj.jdbc.Driver");
+        }
         prop.putProperties(map);
         return new DTCatalog(
                 name,
                 prop.getString(CATALOG_DEFAULT_DATABASE),
                 prop.getString(CATALOG_JDBC_USERNAME),
                 prop.getString(CATALOG_JDBC_PASSWORD),
-                prop.getString(CATALOG_JDBC_BASE_URL),
+                prop.getString(CATALOG_JDBC_URL),
+                prop.getString(CATALOG_JDBC_DRIVER),
                 prop.getString(CATALOG_JDBC_PROJECT_ID),
                 prop.getString(CATALOG_JDBC_BASE_TENANT_ID)
         );

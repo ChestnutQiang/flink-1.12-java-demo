@@ -16,17 +16,24 @@
  * limitations under the License.
  */
 
-package com.dtstack.flinkx.catalog.dialect;
+package com.dtstack.flinkx.catalog.internal.converter;
 
-import org.apache.flink.table.catalog.ObjectPath;
-import org.apache.flink.table.types.DataType;
+import org.apache.flink.table.types.logical.RowType;
 
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
+/**
+ * Runtime converter that responsible to convert between JDBC object and Flink internal object for
+ * MySQL.
+ */
+public class MySQLDTRowConverter extends AbstractDTRowConverter {
 
-/** Separate the jdbc meta-information type to flink table type into the interface. */
-public interface DTDialectTypeMapper {
+    private static final long serialVersionUID = 1L;
 
-    DataType mapping(ObjectPath tablePath, ResultSetMetaData metadata, int colIndex)
-            throws SQLException;
+    @Override
+    public String converterName() {
+        return "MySQL";
+    }
+
+    public MySQLDTRowConverter(RowType rowType) {
+        super(rowType);
+    }
 }

@@ -18,7 +18,7 @@
 
 package com.dtstack.flinkx.catalog.dialect;
 
-import com.dtstack.flinkx.catalog.internal.converter.JdbcRowConverter;
+import com.dtstack.flinkx.catalog.internal.converter.DTRowConverter;
 import org.apache.flink.annotation.Internal;
 import org.apache.flink.table.api.TableSchema;
 import org.apache.flink.table.api.ValidationException;
@@ -56,7 +56,7 @@ public interface DTDialect extends Serializable {
      * @param rowType the given row type
      * @return a row converter for the database
      */
-    JdbcRowConverter getRowConverter(RowType rowType);
+    DTRowConverter getRowConverter(RowType rowType);
 
     /**
      * Check if this dialect instance support a specific data type in table schema.

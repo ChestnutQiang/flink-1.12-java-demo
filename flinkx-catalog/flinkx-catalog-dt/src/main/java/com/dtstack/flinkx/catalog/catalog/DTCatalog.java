@@ -51,20 +51,20 @@ public class DTCatalog extends AbstractDTCatalog {
             String defaultDatabase,
             String username,
             String pwd,
-            String baseUrl,
+            String url,
+            String driver,
             String projectId,
             String tenantId
             ) {
-        super(catalogName, defaultDatabase, username, pwd, baseUrl, projectId, tenantId);
-
+        super(catalogName, defaultDatabase, username, pwd, url, driver, projectId, tenantId);
         internal =
                 DTCatalogUtils.createCatalog(
-                        catalogName, defaultDatabase, username, pwd, baseUrl, projectId, tenantId);
+                        catalogName, defaultDatabase, username, pwd, url, driver, projectId, tenantId);
     }
 
     @Override
     public void open() throws CatalogException {
-        super.open();
+        //super.open();
         internal.open();
     }
 
@@ -154,8 +154,4 @@ public class DTCatalog extends AbstractDTCatalog {
         return internal;
     }
 
-    @Override
-    public Optional<Factory> getFactory() {
-        return Optional.of(new DTDynamicTableFactory());
-    }
 }

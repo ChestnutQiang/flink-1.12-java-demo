@@ -26,15 +26,9 @@ import org.apache.flink.table.connector.source.DynamicTableSource;
 import org.apache.flink.table.factories.DynamicTableSinkFactory;
 import org.apache.flink.table.factories.DynamicTableSourceFactory;
 import org.apache.flink.table.factories.FactoryUtil;
-
 import java.util.Set;
-
 import static org.apache.flink.table.factories.FactoryUtil.CONNECTOR;
 
-/**
- * Factory for creating configured instances of {@link JdbcDynamicTableSource} and {@link
- * JdbcDynamicTableSink}.
- */
 @Internal
 public class DTDynamicTableFactory implements DynamicTableSourceFactory, DynamicTableSinkFactory {
 

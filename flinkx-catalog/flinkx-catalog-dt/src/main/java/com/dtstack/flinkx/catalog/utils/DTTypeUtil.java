@@ -39,7 +39,7 @@ import static org.apache.flink.api.common.typeinfo.PrimitiveArrayTypeInfo.BYTE_P
 
 /** Utils for jdbc type. */
 @Internal
-public class JdbcTypeUtil {
+public class DTTypeUtil {
     private static final Map<TypeInformation<?>, Integer> TYPE_MAPPING;
     private static final Map<Integer, String> SQL_TYPE_NAMES;
 
@@ -81,7 +81,7 @@ public class JdbcTypeUtil {
         SQL_TYPE_NAMES = Collections.unmodifiableMap(names);
     }
 
-    private JdbcTypeUtil() {}
+    private DTTypeUtil() {}
 
     public static int typeInformationToSqlType(TypeInformation<?> type) {
 

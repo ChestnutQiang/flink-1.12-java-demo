@@ -116,8 +116,7 @@ public class MySqlDTCatalog extends AbstractDTCatalog {
         String tenantId = getTenantId();
         String sql =
                 String.format(
-                        "select database_name from `%s`.database_info where catalog_name = '%s' and project_id = '%s' and tenant_id = '%s';",
-                        defaultDatabase, catalogName, projectId, tenantId);
+                        "select database_name from database_info where catalog_name = '%s' and project_id = '%s' and tenant_id = '%s';", catalogName, projectId, tenantId);
         List<Object> resultList;
         try {
             resultList = (List<Object>) queryRunner.query(connection, sql, new ColumnListHandler());
@@ -146,8 +145,7 @@ public class MySqlDTCatalog extends AbstractDTCatalog {
 
         String sql =
                 String.format(
-                        "INSERT INTO `%s`.database_info (catalog_name, database_name, catalog_type, project_id, tenant_id) VALUES ('%s', '%s', '%s', '%s', '%s')",
-                        defaultDatabase, catalogName, name, "mysql", projectId, tenantId);
+                        "INSERT INTO database_info (catalog_name, database_name, catalog_type, project_id, tenant_id) VALUES ('%s', '%s', '%s', '%s', '%s')", catalogName, name, "mysql", projectId, tenantId);
         try {
             // 如果要返回第一个主键，需要传入 connection.
             queryRunner.insert(connection, sql, new ScalarHandler<>());
@@ -196,8 +194,7 @@ public class MySqlDTCatalog extends AbstractDTCatalog {
         String tenantId = getTenantId();
         String sql =
                 String.format(
-                        "delete from `%s`.database_info  where catalog_name = '%s' and database_name = '%s' and project_id = '%s' and tenant_id = '%s'",
-                        defaultDatabase, catalogName, name, projectId, tenantId);
+                        "delete from database_info  where catalog_name = '%s' and database_name = '%s' and project_id = '%s' and tenant_id = '%s'", catalogName, name, projectId, tenantId);
         try {
             // 如果要返回第一个主键，需要传入 connection.
             queryRunner.execute(connection, sql);
@@ -339,8 +336,7 @@ public class MySqlDTCatalog extends AbstractDTCatalog {
         String defaultDatabase = getDefaultDatabase();
         String sql =
                 String.format(
-                        "INSERT INTO `%s`.`properties_info` (table_id, `key`, `value`) VALUES ('%s' , ?, ?);",
-                        defaultDatabase, tableId);
+                        "INSERT INTO `properties_info` (table_id, `key`, `value`) VALUES ('%s' , ?, ?);", tableId);
         Object[][] params = getMapKeyValue(properties);
         try {
             queryRunner.batch(connection, sql, params);
@@ -354,8 +350,7 @@ public class MySqlDTCatalog extends AbstractDTCatalog {
         String defaultDatabase = getDefaultDatabase();
         String sql =
                 String.format(
-                        "delete from `%s`.`properties_info` where table_id = '%s'",
-                        defaultDatabase, tableId);
+                        "delete from `properties_info` where table_id = '%s'", tableId);
         try {
             queryRunner.execute(connection, sql);
         } catch (SQLException e) {
@@ -389,13 +384,12 @@ public class MySqlDTCatalog extends AbstractDTCatalog {
         String defaultDatabase = getDefaultDatabase();
         String databaseName = tablePath.getDatabaseName();
         String tableName = tablePath.getObjectName();
-        String catalogId = getCatalogId(databaseName);
+        String databaseId = getdatabaseId(databaseName);
         String projectId = getProjectId();
         String tenantId = getTenantId();
         String sql =
                 String.format(
-                        "INSERT INTO `%s`.`table_info` (catalog_id, database_name, table_name, project_id, tenant_id)  VALUES ('%s', '%s', '%s', '%s', '%s')",
-                        defaultDatabase, catalogId, databaseName, tableName, projectId, tenantId);
+                        "INSERT INTO `table_info` (catalog_id, database_name, table_name, project_id, tenant_id)  VALUES ('%s', '%s', '%s', '%s', '%s')", databaseId, databaseName, tableName, projectId, tenantId);
         Object tableId;
         try {
             // 如果要返回第一个主键，需要传入 connection.
@@ -411,13 +405,12 @@ public class MySqlDTCatalog extends AbstractDTCatalog {
         String defaultDatabase = getDefaultDatabase();
         String databaseName = tablePath.getDatabaseName();
         String tableName = tablePath.getObjectName();
-        String catalogId = getCatalogId(databaseName);
+        String databaseId = getdatabaseId(databaseName);
         String projectId = getProjectId();
         String tenantId = getTenantId();
         String sql =
                 String.format(
-                        "delete from `%s`.table_info where catalog_id = '%s' and database_name = '%s' and table_name = '%s' and project_id = '%s' and tenant_id = '%s'",
-                        defaultDatabase, catalogId, databaseName, tableName, projectId, tenantId);
+                        "delete from table_info where database_id = '%s' and table_name = '%s' and project_id = '%s' and tenant_id = '%s'", databaseId, databaseName, tableName, projectId, tenantId);
         try {
             queryRunner.execute(connection, sql);
         } catch (SQLException e) {
@@ -425,28 +418,27 @@ public class MySqlDTCatalog extends AbstractDTCatalog {
         }
     }
 
-    private String getCatalogId(String databaseName) {
+    private String getdatabaseId(String databaseName) {
         // 元数据存储
         String defaultDatabase = getDefaultDatabase();
         String catalogName = getName();
         String sql =
                 String.format(
-                        "select id from `%s`.database_info where catalog_name = '%s' and database_name = '%s'",
-                        defaultDatabase, catalogName, databaseName);
-        Object[] catalogInfo;
+                        "select id from database_info where catalog_name = '%s' and database_name = '%s'", catalogName, databaseName);
+        Object[] databaseInfo;
         try {
-            catalogInfo = queryRunner.query(connection, sql, new ArrayHandler());
+            databaseInfo = queryRunner.query(connection, sql, new ArrayHandler());
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
 
-        if (catalogInfo == null) {
+        if (databaseInfo == null) {
             throw new CatalogException(
                     String.format(
                             "Catalog : %s, database : %s is not exist.",
                             catalogName, databaseName));
         }
-        return String.valueOf(catalogInfo[0]);
+        return String.valueOf(databaseInfo[0]);
     }
 
     private String getTableId(ObjectPath tablePath) {
@@ -454,27 +446,26 @@ public class MySqlDTCatalog extends AbstractDTCatalog {
         String defaultDatabase = getDefaultDatabase();
         String catalogName = getName();
         String databaseName = tablePath.getDatabaseName();
-        String catalogId = getCatalogId(databaseName);
+        String databaseId = getdatabaseId(databaseName);
         String tableName = tablePath.getObjectName();
 
         String sql =
                 String.format(
-                        "select * from `%s`.table_info where catalog_id = '%s' and database_name = '%s' and table_name = '%s'",
-                        defaultDatabase, catalogId, databaseName, tableName);
-        Object[] catalogInfo;
+                        "select * from table_info where database_id = '%s' and table_name = '%s'", databaseId, databaseName, tableName);
+        Object[] databaseInfo;
         try {
-            catalogInfo = queryRunner.query(connection, sql, new ArrayHandler());
+            databaseInfo = queryRunner.query(connection, sql, new ArrayHandler());
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
 
-        if (catalogInfo == null || catalogInfo.length == 0) {
+        if (databaseInfo == null || databaseInfo.length == 0) {
             throw new CatalogException(
                     String.format(
                             "Catalog : %s, database : %s is not exist.",
                             catalogName, databaseName));
         }
-        return String.valueOf(catalogInfo[0]);
+        return String.valueOf(databaseInfo[0]);
     }
 
     public Map<String, String> getTableProperties(ObjectPath tablePath) {
@@ -485,8 +476,7 @@ public class MySqlDTCatalog extends AbstractDTCatalog {
         String tableId = getTableId(tablePath);
         String sql =
                 String.format(
-                        "select * from `%s`.properties_info where table_id = '%s'",
-                        defaultDatabase, tableId);
+                        "select * from properties_info where table_id = '%s'", tableId);
         HashMap<String, String> result = new HashMap<>();
         List<Map<String, Object>> propertiesInfo;
         try {
@@ -522,13 +512,12 @@ public class MySqlDTCatalog extends AbstractDTCatalog {
             throw new DatabaseNotExistException(getName(), databaseName);
         }
         String defaultDatabase = getDefaultDatabase();
-        String catalogId = getCatalogId(databaseName);
+        String databaseId = getdatabaseId(databaseName);
         String projectId = getProjectId();
         String tenantId = getTenantId();
         String sql =
                 String.format(
-                        "select table_name from `%s`.table_info where catalog_id = '%s' and database_name = '%s' and project_id = '%s' and tenant_id = '%s';",
-                        defaultDatabase, catalogId, databaseName, projectId, tenantId);
+                        "select table_name from table_info where database_id = '%s' and project_id = '%s' and tenant_id = '%s';", databaseId, databaseName, projectId, tenantId);
         List<Object> resultList;
         try {
             resultList = (List<Object>) queryRunner.query(connection, sql, new ColumnListHandler());
@@ -573,18 +562,17 @@ public class MySqlDTCatalog extends AbstractDTCatalog {
 
         String databaseName = tablePath.getDatabaseName();
         String tableName = tablePath.getObjectName();
-        String catalogId = getCatalogId(databaseName);
+        String databaseId = getdatabaseId(databaseName);
         String sql =
                 String.format(
-                        "select * from `%s`.table_info where catalog_id = '%s' and database_name = '%s' and table_name = '%s'",
-                        defaultDatabase, catalogId, databaseName, tableName);
-        Object[] catalogInfo;
+                        "select * from table_info where database_id = '%s' and table_name = '%s'", databaseId, databaseName, tableName);
+        Object[] databaseInfo;
         try {
-            catalogInfo = queryRunner.query(connection, sql, new ArrayHandler());
+            databaseInfo = queryRunner.query(connection, sql, new ArrayHandler());
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        if (catalogInfo == null || catalogInfo.length == 0) {
+        if (databaseInfo == null || databaseInfo.length == 0) {
             return false;
         }
         return true;

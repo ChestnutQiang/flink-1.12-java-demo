@@ -19,6 +19,7 @@
 package com.dtstack.flinkx.catalog.internal.converter;
 
 
+import com.dtstack.flinkx.catalog.utils.DTTypeUtil;
 import org.apache.flink.table.data.*;
 import org.apache.flink.table.types.logical.*;
 import org.apache.flink.table.types.utils.TypeConversions;
@@ -33,23 +34,23 @@ import java.time.LocalTime;
 import static org.apache.flink.util.Preconditions.checkNotNull;
 
 /** Base class for all converters that convert between JDBC object and Flink internal object. */
-public abstract class AbstractJdbcRowConverter implements JdbcRowConverter {
+public abstract class AbstractDTRowConverter implements DTRowConverter {
 
     protected final RowType rowType;
     protected final JdbcDeserializationConverter[] toInternalConverters;
-    protected final JdbcSerializationConverter[] toExternalConverters;
+    protected final DTSerializationConverter[] toExternalConverters;
     protected final LogicalType[] fieldTypes;
 
     public abstract String converterName();
 
-    public AbstractJdbcRowConverter(RowType rowType) {
+    public AbstractDTRowConverter(RowType rowType) {
         this.rowType = checkNotNull(rowType);
         this.fieldTypes =
                 rowType.getFields().stream()
                         .map(RowType.RowField::getType)
                         .toArray(LogicalType[]::new);
         this.toInternalConverters = new JdbcDeserializationConverter[rowType.getFieldCount()];
-        this.toExternalConverters = new JdbcSerializationConverter[rowType.getFieldCount()];
+        this.toExternalConverters = new DTSerializationConverter[rowType.getFieldCount()];
         for (int i = 0; i < rowType.getFieldCount(); i++) {
             toInternalConverters[i] = createNullableInternalConverter(rowType.getTypeAt(i));
             toExternalConverters[i] = createNullableExternalConverter(fieldTypes[i]);
@@ -91,7 +92,7 @@ public abstract class AbstractJdbcRowConverter implements JdbcRowConverter {
      * PreparedStatement}.
      */
     @FunctionalInterface
-    interface JdbcSerializationConverter extends Serializable {
+    interface DTSerializationConverter extends Serializable {
         void serialize(RowData rowData, int index, com.dtstack.flinkx.catalog.statement.FieldNamedPreparedStatement statement)
                 throws SQLException;
     }
@@ -170,15 +171,15 @@ public abstract class AbstractJdbcRowConverter implements JdbcRowConverter {
         }
     }
 
-    /** Create a nullable JDBC f{@link JdbcSerializationConverter} from given sql type. */
-    protected JdbcSerializationConverter createNullableExternalConverter(LogicalType type) {
+    /** Create a nullable JDBC f{@link DTSerializationConverter} from given sql type. */
+    protected DTSerializationConverter createNullableExternalConverter(LogicalType type) {
         return wrapIntoNullableExternalConverter(createExternalConverter(type), type);
     }
 
-    protected JdbcSerializationConverter wrapIntoNullableExternalConverter(
-            JdbcSerializationConverter jdbcSerializationConverter, LogicalType type) {
+    protected DTSerializationConverter wrapIntoNullableExternalConverter(
+            DTSerializationConverter DTSerializationConverter, LogicalType type) {
         final int sqlType =
-                com.dtstack.flinkx.catalog.utils.JdbcTypeUtil.typeInformationToSqlType(
+                DTTypeUtil.typeInformationToSqlType(
                         TypeConversions.fromDataTypeToLegacyInfo(
                                 TypeConversions.fromLogicalToDataType(type)));
         return (val, index, statement) -> {
@@ -187,12 +188,12 @@ public abstract class AbstractJdbcRowConverter implements JdbcRowConverter {
                     || LogicalTypeRoot.NULL.equals(type.getTypeRoot())) {
                 statement.setNull(index, sqlType);
             } else {
-                jdbcSerializationConverter.serialize(val, index, statement);
+                DTSerializationConverter.serialize(val, index, statement);
             }
         };
     }
 
-    protected JdbcSerializationConverter createExternalConverter(LogicalType type) {
+    protected DTSerializationConverter createExternalConverter(LogicalType type) {
         switch (type.getTypeRoot()) {
             case BOOLEAN:
                 return (val, index, statement) ->

@@ -18,8 +18,8 @@
 
 package com.dtstack.flinkx.catalog.dialect;
 
-import com.dtstack.flinkx.catalog.internal.converter.JdbcRowConverter;
-import com.dtstack.flinkx.catalog.internal.converter.PostgresRowConverter;
+import com.dtstack.flinkx.catalog.internal.converter.DTRowConverter;
+import com.dtstack.flinkx.catalog.internal.converter.MySQLDTRowConverter;
 import org.apache.flink.table.types.logical.LogicalTypeRoot;
 import org.apache.flink.table.types.logical.RowType;
 
@@ -28,65 +28,64 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-/** JDBC dialect for PostgreSQL. */
-public class PostgresDialect extends AbstractDialect {
+/** JDBC dialect for MySQL. */
+public class MySQLDTDialect extends AbstractDialect {
 
     private static final long serialVersionUID = 1L;
 
-    // Define MAX/MIN precision of TIMESTAMP type according to PostgreSQL docs:
-    // https://www.postgresql.org/docs/12/datatype-datetime.html
+    // Define MAX/MIN precision of TIMESTAMP type according to Mysql docs:
+    // https://dev.mysql.com/doc/refman/8.0/en/fractional-seconds.html
     private static final int MAX_TIMESTAMP_PRECISION = 6;
     private static final int MIN_TIMESTAMP_PRECISION = 1;
 
-    // Define MAX/MIN precision of DECIMAL type according to PostgreSQL docs:
-    // https://www.postgresql.org/docs/12/datatype-numeric.html#DATATYPE-NUMERIC-DECIMAL
-    private static final int MAX_DECIMAL_PRECISION = 1000;
+    // Define MAX/MIN precision of DECIMAL type according to Mysql docs:
+    // https://dev.mysql.com/doc/refman/8.0/en/fixed-point-types.html
+    private static final int MAX_DECIMAL_PRECISION = 65;
     private static final int MIN_DECIMAL_PRECISION = 1;
 
     @Override
     public boolean canHandle(String url) {
-        return url.startsWith("jdbc:postgresql:");
+        return url.startsWith("jdbc:mysql:");
     }
 
     @Override
-    public JdbcRowConverter getRowConverter(RowType rowType) {
-        return new PostgresRowConverter(rowType);
+    public DTRowConverter getRowConverter(RowType rowType) {
+        return new MySQLDTRowConverter(rowType);
     }
 
     @Override
     public Optional<String> defaultDriverName() {
-        return Optional.of("org.postgresql.Driver");
-    }
-
-    /** Postgres upsert query. It use ON CONFLICT ... DO UPDATE SET.. to replace into Postgres. */
-    @Override
-    public Optional<String> getUpsertStatement(
-            String tableName, String[] fieldNames, String[] uniqueKeyFields) {
-        String uniqueColumns =
-                Arrays.stream(uniqueKeyFields)
-                        .map(this::quoteIdentifier)
-                        .collect(Collectors.joining(", "));
-        String updateClause =
-                Arrays.stream(fieldNames)
-                        .map(f -> quoteIdentifier(f) + "=EXCLUDED." + quoteIdentifier(f))
-                        .collect(Collectors.joining(", "));
-        return Optional.of(
-                getInsertIntoStatement(tableName, fieldNames)
-                        + " ON CONFLICT ("
-                        + uniqueColumns
-                        + ")"
-                        + " DO UPDATE SET "
-                        + updateClause);
+        return Optional.of("com.mysql.jdbc.Driver");
     }
 
     @Override
     public String quoteIdentifier(String identifier) {
-        return identifier;
+        return "`" + identifier + "`";
+    }
+
+    /**
+     * Mysql upsert query use DUPLICATE KEY UPDATE.
+     *
+     * <p>NOTE: It requires Mysql's primary key to be consistent with pkFields.
+     *
+     * <p>We don't use REPLACE INTO, if there are other fields, we can keep their previous values.
+     */
+    @Override
+    public Optional<String> getUpsertStatement(
+            String tableName, String[] fieldNames, String[] uniqueKeyFields) {
+        String updateClause =
+                Arrays.stream(fieldNames)
+                        .map(f -> quoteIdentifier(f) + "=VALUES(" + quoteIdentifier(f) + ")")
+                        .collect(Collectors.joining(", "));
+        return Optional.of(
+                getInsertIntoStatement(tableName, fieldNames)
+                        + " ON DUPLICATE KEY UPDATE "
+                        + updateClause);
     }
 
     @Override
     public String dialectName() {
-        return "PostgreSQL";
+        return "MySQL";
     }
 
     @Override
@@ -111,17 +110,19 @@ public class PostgresDialect extends AbstractDialect {
 
     @Override
     public List<LogicalTypeRoot> unsupportedTypes() {
-        // The data types used in PostgreSQL are list at:
-        // https://www.postgresql.org/docs/12/datatype.html
+        // The data types used in Mysql are list at:
+        // https://dev.mysql.com/doc/refman/8.0/en/data-types.html
 
         // TODO: We can't convert BINARY data type to
         //  PrimitiveArrayTypeInfo.BYTE_PRIMITIVE_ARRAY_TYPE_INFO in
         // LegacyTypeInfoDataTypeConverter.
         return Arrays.asList(
                 LogicalTypeRoot.BINARY,
+                LogicalTypeRoot.TIMESTAMP_WITH_LOCAL_TIME_ZONE,
                 LogicalTypeRoot.TIMESTAMP_WITH_TIME_ZONE,
                 LogicalTypeRoot.INTERVAL_YEAR_MONTH,
                 LogicalTypeRoot.INTERVAL_DAY_TIME,
+                LogicalTypeRoot.ARRAY,
                 LogicalTypeRoot.MULTISET,
                 LogicalTypeRoot.MAP,
                 LogicalTypeRoot.ROW,

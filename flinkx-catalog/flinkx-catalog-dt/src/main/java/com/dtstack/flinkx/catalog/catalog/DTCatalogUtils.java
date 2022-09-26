@@ -18,10 +18,7 @@
 
 package com.dtstack.flinkx.catalog.catalog;
 
-import com.dtstack.flinkx.catalog.dialect.DTDialect;
-import com.dtstack.flinkx.catalog.dialect.DTDialects;
-import com.dtstack.flinkx.catalog.dialect.MySQLDialect;
-import com.dtstack.flinkx.catalog.dialect.PostgresDialect;
+import com.dtstack.flinkx.catalog.dialect.*;
 
 import static org.apache.flink.util.Preconditions.checkArgument;
 
@@ -34,7 +31,7 @@ public class DTCatalogUtils {
     public static void validateJdbcUrl(String url) {
         String[] parts = url.trim().split("\\/+");
 
-        checkArgument(parts.length == 2);
+        checkArgument(parts.length >= 2);
     }
 
     /** Create catalog instance from given information. */
@@ -43,18 +40,15 @@ public class DTCatalogUtils {
             String defaultDatabase,
             String username,
             String pwd,
-            String baseUrl,
+            String url,
+            String driver,
             String projectId,
             String tenantId
     ) {
-        DTDialect dialect = DTDialects.get(baseUrl).get();
-
-        if (dialect instanceof PostgresDialect) {
-            return new PostgresDTCatalog(
-                    catalogName, defaultDatabase, username, pwd, baseUrl, projectId, tenantId);
-        } else if (dialect instanceof MySQLDialect) {
+        DTDialect dialect = DTDialects.get(url).get();
+        if (dialect instanceof MySQLDTDialect) {
             return new MySqlDTCatalog(
-                    catalogName, defaultDatabase, username, pwd, baseUrl, projectId, tenantId);
+                    catalogName, defaultDatabase, username, pwd, url, driver, projectId, tenantId);
         } else {
             throw new UnsupportedOperationException(
                     String.format("Catalog for '%s' is not supported yet.", dialect));

@@ -20,6 +20,7 @@ package com.dtstack.flinkx.catalog.catalog;
 
 
 
+import com.dtstack.flinkx.catalog.table.DTDynamicTableFactory;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.flink.table.api.ValidationException;
@@ -48,7 +49,9 @@ public abstract class AbstractDTCatalog extends AbstractCatalog {
 
     protected final String username;
     protected final String pwd;
-    protected final String baseUrl;
+    protected final String url;
+    protected final String driver;
+
     protected final String defaultUrl;
     protected final String projectId;
     protected final String tenantId;
@@ -61,23 +64,26 @@ public abstract class AbstractDTCatalog extends AbstractCatalog {
             String defaultDatabase,
             String username,
             String pwd,
-            String baseUrl,
+            String url,
+            String driver,
             String projectId,
             String tenantId) {
         super(catalogName, defaultDatabase);
 
         checkArgument(!StringUtils.isNullOrWhitespaceOnly(username));
         checkArgument(!StringUtils.isNullOrWhitespaceOnly(pwd));
-        checkArgument(!StringUtils.isNullOrWhitespaceOnly(baseUrl));
+        checkArgument(!StringUtils.isNullOrWhitespaceOnly(url));
         checkArgument(!StringUtils.isNullOrWhitespaceOnly(projectId));
         checkArgument(!StringUtils.isNullOrWhitespaceOnly(tenantId));
 
-        DTCatalogUtils.validateJdbcUrl(baseUrl);
+        DTCatalogUtils.validateJdbcUrl(url);
 
         this.username = username;
         this.pwd = pwd;
-        this.baseUrl = baseUrl.endsWith("/") ? baseUrl : baseUrl + "/";
-        this.defaultUrl = this.baseUrl + defaultDatabase + "?autoReconnect=true&failOverReadOnly=false";
+        //this.url = url.endsWith("/") ? url : url + "/";
+        this.url = url;
+        this.defaultUrl = this.url;
+        this.driver = org.apache.commons.lang3.StringUtils.isNotBlank(driver) ? driver  : "com.mysql.jdbc.Driver";
         this.projectId = projectId;
         this.tenantId = tenantId;
     }
@@ -109,8 +115,12 @@ public abstract class AbstractDTCatalog extends AbstractCatalog {
         return pwd;
     }
 
-    public String getBaseUrl() {
-        return baseUrl;
+    public String getUrl() {
+        return url;
+    }
+
+    public String getDriver() {
+        return driver;
     }
 
     public String getProjectId() {
@@ -154,7 +164,7 @@ public abstract class AbstractDTCatalog extends AbstractCatalog {
 
     @Override
     public Optional<Factory> getFactory() {
-        return Optional.of(new com.dtstack.flinkx.catalog.table.JdbcDynamicTableFactory());
+        return Optional.of(new DTDynamicTableFactory());
     }
 
     // ------ databases ------
@@ -162,7 +172,6 @@ public abstract class AbstractDTCatalog extends AbstractCatalog {
     @Override
     public boolean databaseExists(String databaseName) throws CatalogException {
         checkArgument(!StringUtils.isNullOrWhitespaceOnly(databaseName));
-
         return listDatabases().contains(databaseName);
     }
 
