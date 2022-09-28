@@ -2,6 +2,7 @@ package com.dtstack.flinkx.catalog;
 
 import com.dtstack.flinkx.catalog.dt.catalog.DTCatalog;
 import org.apache.flink.configuration.PipelineOptions;
+import org.apache.flink.core.execution.JobClient;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.table.api.EnvironmentSettings;
 import org.apache.flink.table.api.StatementSet;
@@ -14,6 +15,9 @@ import org.junit.Test;
 import org.junit.contrib.java.lang.system.EnvironmentVariables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 
 /**
  * @author wujuan
@@ -188,9 +192,120 @@ public class DTCatalogTableTest {
 
         String deleteTable = "drop table if exists catalog1.default_database.table1";
         tableEnv.executeSql(deleteTable);
+
+        boolean onlyExecuteDDL = false;
+        //boolean onlyExecuteDDL = true;
+        String ttt = "No operators defined in streaming topology. Cannot generate StreamGraph.";
+        StatementSet statement = tableEnv.createStatementSet();
+        TableResult execute = null;
+        try {
+            execute = statement.execute();
+            Optional<JobClient> jobClient = execute.getJobClient();
+            if (jobClient.isPresent()) {
+                jobClient.get().getAccumulators().get();
+            }
+        } catch (IllegalStateException e) {
+            if(onlyExecuteDDL) {
+                //System.out.println(e.getMessage());
+                //if(ttt.equals(e.getMessage())) {
+                //    System.out.println("======================");
+                //}
+            } else {
+                throw e;
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        }
     }
 
+    @Test
+    public void renameTable() {
+        String catalogSQL =
+                "CREATE CATALOG catalog1 WITH(\n"
+                        + "    'type' = 'DT',\n"
+                        + "    'default-database' = 'default_database',\n"
+                        + "    'driver' = 'com.mysql.cj.jdbc.Driver',\n"
+                        + "    'url' = 'jdbc:mysql://172.16.100.186:3306/catalog_default?autoReconnect=true&failOverReadOnly=false',\n"
+                        + "    'username' = 'drpeco',\n"
+                        + "    'password' = 'DT@Stack#123',\n"
+                        + "    'project-id' = '1',\n"
+                        + "    'tenant-id' = '1'\n"
+                        + ")";
+        tableEnv.executeSql(catalogSQL);
 
+        String createDatabase = "create database if not exists catalog1.default_database";
+        tableEnv.executeSql(createDatabase);
+
+        String createTableSQL =
+                ""
+                        + "CREATE TABLE if not exists catalog1.default_database.table1 (\n"
+                        + " id int,\n"
+                        + " name string,\n"
+                        + " age bigint,\n"
+                        + " primary key (id) not enforced\n"
+                        + ") with (\n"
+                        + " 'connector' = 'jdbc',\n"
+                        + " 'url' = 'jdbc:mysql://172.16.83.218:3306/wujuan?useSSL=false',\n"
+                        + " 'table-name' = 't2',\n"
+                        + " 'username' = 'drpeco',\n"
+                        + " 'password' = 'DT@Stack#123'\n"
+                        + ")";
+        //
+        tableEnv.executeSql(createTableSQL);
+
+        String renameTable = "ALTER TABLE catalog1.default_database.table1 RENAME TO table222";
+        tableEnv.executeSql(renameTable);
+
+    }
+
+    @Test
+    public void alterTable() {
+        String catalogSQL =
+                "CREATE CATALOG catalog1 WITH(\n"
+                        + "    'type' = 'DT',\n"
+                        + "    'default-database' = 'default_database',\n"
+                        + "    'driver' = 'com.mysql.cj.jdbc.Driver',\n"
+                        + "    'url' = 'jdbc:mysql://172.16.100.186:3306/catalog_default?autoReconnect=true&failOverReadOnly=false',\n"
+                        + "    'username' = 'drpeco',\n"
+                        + "    'password' = 'DT@Stack#123',\n"
+                        + "    'project-id' = '1',\n"
+                        + "    'tenant-id' = '1'\n"
+                        + ")";
+        tableEnv.executeSql(catalogSQL);
+
+        String createDatabase = "create database if not exists catalog1.default_database";
+        tableEnv.executeSql(createDatabase);
+
+
+
+        //String dropTable = "drop table if exists catalog1.default_database.table1";
+        //tableEnv.executeSql(dropTable);
+
+
+        String createTableSQL =
+                ""
+                        + "CREATE TABLE if not exists catalog1.default_database.table1 (\n"
+                        + " id int,\n"
+                        + " name string,\n"
+                        + " age bigint,\n"
+                        + " primary key (id) not enforced\n"
+                        + ") with (\n"
+                        + " 'connector' = 'jdbc',\n"
+                        + " 'url' = 'jdbc:mysql://172.16.83.218:3306/wujuan?useSSL=false',\n"
+                        + " 'table-name' = 't2',\n"
+                        + " 'username' = 'drpeco',\n"
+                        + " 'password' = 'DT@Stack#123'\n"
+                        + ")";
+        //
+        tableEnv.executeSql(createTableSQL);
+
+        //String alterTable = "ALTER TABLE catalog1.default_database.table1 SET ('table-name'='t1', 'url'='dbc:mysql://172.16.83.218:3306/wujuan?useSSL=false?autoReconnect=true')";
+        String alterTable = "ALTER TABLE catalog1.default_database.table1 SET ('table-name'='t2', 'url'='dbc:mysql://172.16.83.218:3306/wujuan?useSSL=false')";
+        tableEnv.executeSql(alterTable);
+
+    }
 
 
 

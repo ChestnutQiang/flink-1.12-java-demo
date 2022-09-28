@@ -282,9 +282,27 @@ public class MySqlDTCatalog extends AbstractDTCatalog {
             }
             throw new TableNotExistException(getName(), tablePath);
         }
-
-        throw new UnsupportedOperationException();
-        // TODO update 语句
+        if (tableExists(new ObjectPath(tablePath.getDatabaseName(), newTableName))) {
+            throw new TableAlreadyExistException(getName(), tablePath);
+        }
+        String tableId = getTableId(tablePath);
+        String sql =
+                String.format(
+                        "UPDATE table_info SET table_name = '%s'  WHERE id = '%s'",
+                        newTableName, tableId);
+        int updateCount;
+        try {
+            // 如果要返回第一个主键，需要传入 connection.
+            updateCount = queryRunner.update(connection, sql);
+            if (updateCount < 1) {
+                throw new CatalogException("rename table fail.");
+            }
+            if (updateCount > 1) {
+                throw new CatalogException("rename multi table.");
+            }
+        } catch (SQLException e) {
+            throw new CatalogException(e);
+        }
     }
 
     @Override
@@ -298,8 +316,18 @@ public class MySqlDTCatalog extends AbstractDTCatalog {
             }
             throw new TableNotExistException(getName(), tablePath);
         }
-        // TODO update 语句
-        throw new UnsupportedOperationException();
+        String tableId = getTableId(tablePath);
+        String sql =
+                String.format(
+                        "UPDATE properties_info SET `value` = ?  WHERE table_id = '%s' and `key` = ? ",
+                        tableId);
+        Object[][] params = getMapValueKey(newTable.getOptions());
+        try {
+            // 如果要返回第一个主键，需要传入 connection.
+            int[] batch = queryRunner.batch(connection, sql, params);
+        } catch (SQLException e) {
+            throw new CatalogException(e);
+        }
     }
 
     private void executeBatchInTransaction(ThrowingRunnable batch) {
@@ -369,6 +397,23 @@ public class MySqlDTCatalog extends AbstractDTCatalog {
         return object;
     }
 
+    public static Object[][] getMapValueKey(Map map) {
+        Object[][] object = null;
+        if ((map != null) && (!map.isEmpty())) {
+            int size = map.size();
+            object = new Object[size][2];
+            Iterator iterator = map.entrySet().iterator();
+            for (int i = 0; i < size; i++) {
+                Map.Entry entry = (Map.Entry) iterator.next();
+                Object key = entry.getKey();
+                Object value = entry.getValue();
+                object[i][0] = value;
+                object[i][1] = key;
+            }
+        }
+        return object;
+    }
+
     private String insertTableInfo(ObjectPath tablePath) throws TableAlreadyExistException {
         // 先查询是否存在数据，如果已经存在了直接抛异常，表示无法建表。
         if (tableExists(tablePath)) {
@@ -422,10 +467,12 @@ public class MySqlDTCatalog extends AbstractDTCatalog {
     private String getDatabaseId(String databaseName) {
         // 元数据存储
         String catalogName = getName();
+        String projectId = getProjectId();
+        String tenantId = getTenantId();
         String sql =
                 String.format(
-                        "select id from database_info where catalog_name = '%s' and database_name = '%s'",
-                        catalogName, databaseName);
+                        "select id from database_info where catalog_name = '%s' and database_name = '%s'  and project_id = '%s' and tenant_id = '%s'",
+                        catalogName, databaseName, projectId, tenantId);
         Object[] databaseInfo;
         try {
             databaseInfo = queryRunner.query(connection, sql, new ArrayHandler());
@@ -448,11 +495,12 @@ public class MySqlDTCatalog extends AbstractDTCatalog {
         String databaseName = tablePath.getDatabaseName();
         String databaseId = getDatabaseId(databaseName);
         String tableName = tablePath.getObjectName();
-
+        String projectId = getProjectId();
+        String tenantId = getTenantId();
         String sql =
                 String.format(
-                        "select * from table_info where database_id = '%s' and table_name = '%s'",
-                        databaseId, tableName);
+                        "select * from table_info where database_id = '%s' and table_name = '%s'  and project_id = '%s' and tenant_id = '%s'",
+                        databaseId, tableName, projectId, tenantId);
         Object[] databaseInfo;
         try {
             databaseInfo = queryRunner.query(connection, sql, new ArrayHandler());
@@ -559,15 +607,17 @@ public class MySqlDTCatalog extends AbstractDTCatalog {
         String databaseName = tablePath.getDatabaseName();
         String tableName = tablePath.getObjectName();
         String databaseId = getDatabaseId(databaseName);
+        String projectId = getProjectId();
+        String tenantId = getTenantId();
         String sql =
                 String.format(
-                        "select * from table_info where database_id = '%s' and table_name = '%s'",
-                        databaseId, tableName);
+                        "select * from table_info where database_id = '%s' and table_name = '%s' and project_id = '%s' and tenant_id = '%s'",
+                        databaseId, tableName, projectId, tenantId);
         Object[] databaseInfo;
         try {
             databaseInfo = queryRunner.query(connection, sql, new ArrayHandler());
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            throw new CatalogException(e);
         }
         if (databaseInfo == null || databaseInfo.length == 0) {
             return false;

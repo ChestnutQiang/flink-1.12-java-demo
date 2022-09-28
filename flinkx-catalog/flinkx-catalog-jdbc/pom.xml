@@ -176,4 +176,37 @@
 
     </dependencies>
 
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-antrun-plugin</artifactId>
+                    <executions>
+                        <execution>
+                            <id>copy-resources</id>
+                            <!-- here the phase you need -->
+                            <phase>package</phase>
+                            <goals>
+                                <goal>run</goal>
+                            </goals>
+                            <configuration>
+                                <tasks>
+                                    <copy todir="${basedir}/../../${dist.dir}/${sql.base.dir}/"
+                                          file="${basedir}/target/${project.artifactId}-${project.version}.jar"/>
+                                    <move file="${basedir}/../../${dist.dir}/${sql.base.dir}/${project.artifactId}-${project.version}.jar"
+                                          tofile="${basedir}/../../${dist.dir}/${sql.base.dir}/${project.artifactId}-${git.branch}.jar"/>
+                                    <delete>
+                                        <fileset dir="${basedir}/../../${dist.dir}/${sql.base.dir}/"
+                                                 includes="${project.artifactId}-*.jar"
+                                                 excludes="${project.artifactId}-${git.branch}.jar"/>
+                                    </delete>
+                                </tasks>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
 </project>

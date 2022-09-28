@@ -120,7 +120,7 @@ public class DTCatalog extends AbstractDTCatalog {
     public void alterTable(
             ObjectPath tablePath, CatalogBaseTable newTable, boolean ignoreIfNotExists)
             throws TableNotExistException, CatalogException {
-        throw new UnsupportedOperationException();
+        internal.alterTable(tablePath, newTable, ignoreIfNotExists);
     }
 
     @Override
