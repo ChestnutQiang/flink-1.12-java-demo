@@ -36,7 +36,8 @@ import org.apache.flink.util.function.ThrowingRunnable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.*;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -45,9 +46,6 @@ import java.util.stream.Collectors;
 public class MySqlDTCatalog extends AbstractDTCatalog {
 
     private static final Logger LOG = LoggerFactory.getLogger(MySqlDTCatalog.class);
-
-    // private final DTDialectTypeMapper dialectTypeMapper;
-    //
 
     private static final Set<String> builtinDatabases =
             new HashSet<String>() {
@@ -103,6 +101,7 @@ public class MySqlDTCatalog extends AbstractDTCatalog {
                 String.format(
                         "select database_name from database_info where catalog_name = '%s' and project_id = '%s' and tenant_id = '%s';",
                         catalogName, projectId, tenantId);
+        printLog(catalogName, null, null, projectId, tenantId, sql);
         List<Object> resultList;
         try {
             resultList = (List<Object>) queryRunner.query(connection, sql, new ColumnListHandler());
@@ -131,6 +130,7 @@ public class MySqlDTCatalog extends AbstractDTCatalog {
                 String.format(
                         "INSERT INTO database_info (catalog_name, database_name, catalog_type, project_id, tenant_id) VALUES ('%s', '%s', '%s', '%s', '%s')",
                         catalogName, name, DTCatalogType, projectId, tenantId);
+        printLog(catalogName, name, null, projectId, tenantId, sql);
         try {
             // 如果要返回第一个主键，需要传入 connection.
             queryRunner.insert(connection, sql, new ScalarHandler<>());
@@ -461,7 +461,6 @@ public class MySqlDTCatalog extends AbstractDTCatalog {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
     }
 
     private String getDatabaseId(String databaseName) {
@@ -564,6 +563,7 @@ public class MySqlDTCatalog extends AbstractDTCatalog {
                 String.format(
                         "select table_name from table_info where database_id = '%s' and project_id = '%s' and tenant_id = '%s';",
                         databaseId, projectId, tenantId);
+        printLog(getName(), databaseName, null, projectId, tenantId, sql);
         List<Object> resultList;
         try {
             resultList = (List<Object>) queryRunner.query(connection, sql, new ColumnListHandler());
@@ -613,6 +613,7 @@ public class MySqlDTCatalog extends AbstractDTCatalog {
                 String.format(
                         "select * from table_info where database_id = '%s' and table_name = '%s' and project_id = '%s' and tenant_id = '%s'",
                         databaseId, tableName, projectId, tenantId);
+        printLog(getName(), databaseName, tableName, projectId, tenantId, sql);
         Object[] databaseInfo;
         try {
             databaseInfo = queryRunner.query(connection, sql, new ArrayHandler());
@@ -638,5 +639,13 @@ public class MySqlDTCatalog extends AbstractDTCatalog {
     @Override
     protected String getSchemaTableName(ObjectPath tablePath) {
         return tablePath.getObjectName();
+    }
+
+    public void  printLog(String CatalogName ,String databaseName , String tableName,  String projectId, String tenantId, String sql) {
+        String message =
+                String.format(
+                        "Catalog : %s, database : %s, table : %s, sql : %s",
+                        CatalogName, databaseName, tableName, sql);
+        LOG.info(message);
     }
 }

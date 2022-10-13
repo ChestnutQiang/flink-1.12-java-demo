@@ -5,6 +5,7 @@ import org.apache.flink.configuration.PipelineOptions;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.table.api.EnvironmentSettings;
 import org.apache.flink.table.api.StatementSet;
+import org.apache.flink.table.api.TableResult;
 import org.apache.flink.table.api.bridge.java.StreamTableEnvironment;
 import org.apache.flink.table.catalog.Catalog;
 import org.junit.Before;
@@ -117,6 +118,10 @@ public class DTCatalogDatabaseTest {
         Catalog catalog = flink_catalog.get();
 
         System.out.println(catalog.listDatabases().toString());
+
+        String showDatabases = "show databases";
+        TableResult tableResult = tableEnv.executeSql(showDatabases);
+        tableResult.print();
 
     }
     @Test

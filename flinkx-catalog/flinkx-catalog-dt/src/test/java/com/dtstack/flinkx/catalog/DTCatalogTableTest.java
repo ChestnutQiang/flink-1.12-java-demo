@@ -85,6 +85,9 @@ public class DTCatalogTableTest {
         Catalog catalog = tableEnv.getCatalog("catalog1").get();
         System.out.println(catalog.listDatabases().toString());
 
+        String userCatalog = "use catalog catalog1";
+        tableEnv.executeSql(userCatalog);
+
         String showTables = "show tables";
         TableResult tableResult = tableEnv.executeSql(showTables);
         tableResult.print();
@@ -279,10 +282,8 @@ public class DTCatalogTableTest {
         tableEnv.executeSql(createDatabase);
 
 
-
         //String dropTable = "drop table if exists catalog1.default_database.table1";
         //tableEnv.executeSql(dropTable);
-
 
         String createTableSQL =
                 ""
